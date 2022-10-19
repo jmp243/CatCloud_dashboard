@@ -1,10 +1,10 @@
 # read in CatCloud data
 # Jung Mee Park
 # 2022-23-09
-# 2022-12-10 files have been updated
+# 2022-17-10 files have been updated
 
 #### load libraries ####
-library("googleAnalyticsR")
+# library("googleAnalyticsR")
 library("tidyverse")
 library(readr)
 library(data.table)
@@ -37,10 +37,10 @@ for (i in 1:length(file_list)){
   )}
 
 #### check files ####
-names(`UAccess_Student Academic Information.csv`)
+# names(`UAccess_Student Academic Information.csv`)
 #### merge data and rename datafile ####
-# SF_UAccess <- merge(x = `UAccess_Student Academic Information.csv`, y = SFContactData.csv,
-#                     by.x = "Student.ID", by.y = "Emplid") 
+# SF_UAccess <- merge(x = `UAccess_Student Academic Information.csv`, y = sf_users_IDs_emails.csv,
+#                     by.x = "Student.ID", by.y = "Emplid")
 # 
 
 # 
@@ -59,6 +59,8 @@ Users_for_Add_or_Edit.csv <- rename(Users_for_Add_or_Edit.csv, Add.Event.Count =
 #### merge updated catcloud users to goals and users add or edit ####
 Cat_goals <- left_join(Updated_CatCloud_Users.csv, Users_Goals.csv)
 Cat_add <- left_join(Cat_goals, Users_for_Add_or_Edit.csv)
+Cat_add <- Cat_add %>% 
+  filter(Namespace.ID == "USER_ID")
 # Cat2_SF <- merge(x = Cat_SF, y = Users_for_Add_or_Edit.csv,
 #                  by.x = "App.instance.ID", by.y = "App.instance.ID")
 
@@ -69,6 +71,7 @@ Cat_add <- left_join(Cat_goals, Users_for_Add_or_Edit.csv)
 Cat_SF <- left_join(Cat_add, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
 
 # not_Cat_SF <- anti_join(Updated_CatCloud_Users.csv, sf_users_IDs_emails.csv, by.x = "App.instance.ID", by.y = "User.ID")
+
 not_Cat_SF <- anti_join(Updated_CatCloud_Users.csv, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
 
 # write_named_csv(not_Cat_SF)
@@ -80,11 +83,124 @@ Cat_SF <- Cat_SF %>%
 #### merge all current students based on emails to CatSF ####
 # Cat_SF_Students <- merge(x = Cat_SF, y = `20221012_All Current Students_GPA_Major_forCC.csv`,
 #                          by.x = "Email", by.y = "UA.Email.Address") 
-Cat_SF_Students <- left_join(Cat_SF, `20221012_All Current Students_GPA_Major_forCC.csv`, 
-                             by = c("Email" = "UA.Email.Address"))
+# https://stackoverflow.com/questions/47358243/dplyr-left-join-on-case-when
 
-Cat_SF_Students <- Cat_SF_Students %>% 
-  select(-Alternate.Email.Address, -Personal..Email.Address, -Academic.Load, -Academic.Standing, -Degree.Earned.Date)
+# Cat_SF_Students <- left_join(Cat_SF, `20221017_All Current Students_GPA_Major_forCC.csv`,
+#                              by = c("Email" = "UA.Email.Address"))
+
+# additional_emails <- left_join(Cat_SF, `20221012_All Current Students_GPA_Major_forCC.csv`, 
+#                              by = c("Email" = "Personal..Email.Address"))
+
+#### merge in new sf student data ####
+Cat_SF_enroll <- left_join(Cat_SF, `student enrollment data from SF.csv`, by = c("Email"="Email"))
+
+write_named_csv(Cat_SF_enroll)
+unique(Cat_SF_enroll$Career)
+
+Cat_SF_enroll$Career <- factor(Cat_SF_enroll$Career, 
+                               levels=c("Undergraduate", "Graduate", "Law", "Medical School", 
+                                        "Pharmacy", "Veterinary Medicine", "NA"))
+
+unique(Cat_SF_enroll$Class.Standing)
+Cat_SF_enroll$Class.Standing <- factor(Cat_SF_enroll$Class.Standing, 
+                                      levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate",
+                                                                      "Masters", "Prof 1", "Prof 2",
+                                                                      "Prof 3", "Prof 4", "Doctoral", "NA"))
+Cat_SF_enroll2 <- Cat_SF_enroll %>% 
+  select(-Plan..CPP.Info.Name) %>% 
+  distinct()
+
+n_distinct(Cat_SF_enroll2$Email) #18001
+sapply(Cat_SF_enroll2, function(x) n_distinct(x))
+
+Cat_SF_wide <- Cat_SF_enroll %>%
+  group_by(App.instance.ID) %>%
+  mutate(
+    group = row_number()
+  ) %>%
+  pivot_wider(
+    id_cols = App.instance.ID, 
+    names_from = group,
+    values_from = Plan..CPP.Info.Name,
+    names_sort = TRUE
+  ) %>%
+  ungroup() %>%
+  arrange(App.instance.ID)
+
+Cat_SF_wide <- Cat_SF_wide %>% 
+  select(1:8)
+
+# merge in majors to cat_sf_enroll2 
+cat_sf_full <- left_join(Cat_SF_enroll2, Cat_SF_wide)
+
+n_distinct(cat_sf_full$Email) #18001
+
+write_named_csv(cat_sf_full)
+
+names(cat_sf_full)
+
+summary_tables <- cat_sf_full %>%
+  group_by(NetID, App.instance.ID, Career, Class.Standing) %>% 
+  summarize(Goals.Event.count = sum(Goals.Event.count, na.rm = TRUE),
+            Add.Event.Count = sum(Add.Event.Count, na.rm = TRUE),
+            Event.count = sum(Event.count, na.rm = TRUE)) %>% 
+  ungroup() #abriones1028 has two app.instances
+
+goals_count <- cat_sf_full %>%
+  group_by(NetID, App.instance.ID, Career, Class.Standing) %>% 
+  count(Goals.Event.count, wt = Goals.Event.count, na.rm = TRUE) %>% 
+  ungroup() #abriones1028 has two app.instances
+
+# https://gist.github.com/MCMaurer/0d303a1062c87c97eaa865f4097eba22
+
+library(tidyverse)
+
+tibble(group = c("A", "A", "B", "C"),
+       major = c("bio", "chem", "bio", "art")) %>% 
+  group_by(group) %>% 
+  summarise(major = str_c(major, collapse = "/")) %>% 
+  separate(major, into = c("major1", "major2"), sep = "/")
+
+# drop if Admit Type is missing
+cat_sf_full_na <- cat_sf_full %>% 
+  filter(!is.na(Admit.Type) & Admit.Type != "")
+
+sapply(cat_sf_full_na, function(x) n_distinct(x))
+# 
+# cat_SF_NA <- cat_sf_full %>% 
+#   filter(!is.na(Admit.Type))
+# 
+# cat_SF_missing <- cat_sf_full %>% 
+#   filter(Admit.Type != "")
+
+
+###################################################
+all_students_tidy <- `20221017_All Current Students_GPA_Major_forCC.csv` %>%
+  filter(Program.Status == "AC") %>%
+  ungroup() %>%
+  tibble::rowid_to_column(var = "unique_Email") %>%
+  gather(key = "Email_type", value = "Email", matches("*.Email.Address"))%>%
+  mutate(Email_type = recode(Email_type,
+                         UA.Email.Address = "UA_email",
+                         Alternate.Email.Address = "Alt_email",
+                         Personal..Email.Address = "Personal_email"))
+
+
+
+Cat_SF_student_emails <- left_join(Cat_SF, all_students_tidy,
+                           by = c("Email" = "Email"))
+
+# Cat_SF_Students <- Cat_SF_Students %>%
+#   select(-Alternate.Email.Address, -Personal..Email.Address, -Academic.Load, -Academic.Standing, 
+#          -Degree.Earned.Date, -Units.Taken.included.in.GPA) %>%
+#   distinct()
+# Cat_SF_Students <- Cat_SF_Students %>%
+#   select(-Units.Taken.included.in.GPA) %>%
+#   distinct()
+
+Cat_SF_Students <- Cat_SF_student_emails %>%
+  select(-unique_Email, -Academic.Load, -Academic.Standing, -Degree.Earned.Date, -Email_type, -Units.Taken.included.in.GPA) %>%
+  distinct()
 
 #### reorder the academic levels ####
 unique(Cat_SF_Students$Academic.Level...Beginning.of.Term)
@@ -98,8 +214,8 @@ names(`UAccess_Student Academic Information.csv`)
 
 #### recode the NA ing Academic.Standing, Degree Checkout, Expected graduation term ####
 Cat_SF_Students[Cat_SF_Students == "-"] <- NA
-
-
+Cat_SF_Students[Cat_SF_Students == "- "] <- NA
+Cat_SF_Students[Cat_SF_Students == " -"] <- NA
 # Cat2_SF_Students <- merge(x = Cat2_SF, y = Cat_SF_Students,
 #                           by.x = "App.instance.ID", by.y = "App.instance.ID")
 # 
@@ -107,10 +223,12 @@ Cat_SF_Students[Cat_SF_Students == "-"] <- NA
 #   select(-Stream.name, -Namespace.ID, -Email.x, -First.Name.x, -Last.Name.x, -Views.x,
 #          -Sessions.x, -Engaged.sessions.x, -Event.count.x, -Last.Login.x, -Term.GPA, -Degree.Earned.Date)
 
-
+# Cat_SF_Students2 <- as.data.frame(Cat_SF_Students)
 write_named_csv(Cat_SF_Students)
 
 #### evaluate data ####
+colSums(is.na(Cat_SF_Students))
+
 Cat_SF_Students %>% 
   # group_by(Academic.Level...Beginning.of.Term, Goals.Event.count) %>% 
   count(Academic.Level...Beginning.of.Term, wt = Goals.Event.count) 
@@ -118,6 +236,79 @@ Cat_SF_Students %>%
 Cat_SF_Students %>% 
   # group_by(Academic.Level...Beginning.of.Term, Goals.Event.count) %>% 
   count(Academic.Level...Beginning.of.Term, wt = Add.Event.Count) 
+
+Cat_SF_Students %>% 
+  count(Academic.Level...Beginning.of.Term, wt = Event.count) 
+
+# merge in info from the UAccess_Student Academic Information
+
+UAccess <- `UAccess_Student Academic Information.csv` %>% 
+  separate(Full.Name, c('Last.Name', 'First.Name'), sep = ',') %>% 
+  mutate(First.Name = trimws(First.Name))
+
+UAccess2 <- left_join(`UAccess_Student Academic Information.csv`, UAccess)
+
+new_df <- left_join(Cat_SF_Students, `UAccess_Student Academic Information.csv`)
+
+
+# df2 <- df %>% mutate(a = ifelse(a %in% "", c, a))
+# new_df <- new_df %>% 
+#  mutate(Full.Name = ifelse(Full.Name %in% NA, str_c(Last.Name, ",", First.Name), Full.Name))
+
+new_df <- new_df %>% 
+  mutate(Full.Name = ifelse(is.na(Full.Name), str_c(Last.Name, ",", First.Name), Full.Name))
+
+new_df2 <- left_join(new_df, `UAccess_Student Academic Information.csv`, by = c("Full.Name" = "Full.Name")) #how to do a near match
+
+
+colSums(is.na(new_df2))
+
+new_df2 <- new_df2 %>% 
+  select(App.instance.ID, Sessions, Engaged.sessions, Event.count, Views, Goals.Event.count, Add.Event.Count, 
+         First.Name, Last.Name, Last.Login, Email, Student.ID.y, Residency.y, College,
+         Academic.Level...Beginning.of.Term.y, Academic.Program.Campus.y, Career.y, Primary.Major.Plan.y,
+         Double.Major.Flag.y, Cumulative.GPA.y)
+
+no_info <- new_df2 %>% 
+  filter(is.na(College))
+
+no_acad_info <- new_df2 %>% 
+  filter(is.na(Academic.Level...Beginning.of.Term.y))
+
+# uaccess_no_acad <- left_join(no_acad_info, UAccess2, by = c("Last.Name" = "Last.Name"))
+# 
+# firstName_uaccess <- uaccess_no_acad %>% 
+#   filter(First.Name.y == First.Name.x)
+# 
+# new_df3 <- left_join(new_df2, firstName_uaccess)
+### using multiple email match 
+Cat_SF_Students2$Academic.Level...Beginning.of.Term <- factor(Cat_SF_Students2$Academic.Level...Beginning.of.Term, 
+                                                              levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate",
+                                                                       "Masters", "Professional Year 1", "Professional Year 2",
+                                                                       "Professional Year 3", "Professional Year 4", "Doctoral"))
+Cat_SF_Students2 %>% 
+  count(Academic.Level...Beginning.of.Term, wt = Event.count) 
+colSums(is.na(`20221017_All Current Students_GPA_Major_forCC.csv`))
+
+unique(Cat_SF_Students$College)
+table(Cat_SF_Students$College)
+
+### find the differences
+not_UA_email <- anti_join(Cat_SF_Students, Cat_SF_Students2)
+
+# Cat_SF_Students2 %>% 
+#   group_by(College) %>% 
+#   filter
+
+df_na <- Cat_SF_Students2 %>% filter_at(vars(College,Career),
+                                        all_vars(is.na(.)))
+
+# na_Cat_SF <- left_join(df_na, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
+write_named_csv(df_na)
+
+
+
+
 
 
 
