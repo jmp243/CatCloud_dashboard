@@ -160,15 +160,6 @@ Cat_SF_enroll %>%
   group_by(Primary.College) %>% 
   count()
 
-Headcount_Details.csv %>% 
-  group_by(Academic.Level) %>% 
-  count(wt= Fall.2022)
-
-Cat_SF_enroll %>% 
-  group_by(Class.Standing) %>% 
-  count()
-
-
 unique(Headcount_Details.csv$Academic.Level)
 
 Headcount_Details.csv$Academic.Level<- factor(Headcount_Details.csv$Academic.Level, 
@@ -179,6 +170,24 @@ Headcount_Details.csv$Academic.Level<- factor(Headcount_Details.csv$Academic.Lev
 
 Cat_SF_enroll_CS <- Cat_SF_enroll %>% 
    filter(!is.na(Class.Standing))
+
+Headcount_Details.csv %>% 
+  group_by(Academic.Level) %>% 
+  count(wt= Fall.2022)
+
+Cat_SF_enroll_CS %>% 
+  group_by(Class.Standing) %>% 
+  count()
+
+# rename the n columns
+Cat_SF_users_count <- Cat_SF_enroll %>%  
+  rename(Academic.Level = Class.Standing) %>% 
+  count(Academic.Level, name = "N_users")
+# left_join the to create proportions
+Headcount_Details.csv %>% 
+  count(Academic.Level, wt = Fall.2022, name = "All_students") %>% 
+  left_join(Cat_SF_users_count) %>% 
+  mutate(proportion = N_users/All_students)
 
 
 # Cat_SF_enroll2 <- Cat_SF_enroll %>% 
@@ -416,3 +425,14 @@ df_na <- Cat_SF_Students2 %>% filter_at(vars(College,Career),
 # na_Cat_SF <- left_join(df_na, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
 write_named_csv(df_na)
 
+#### read in excel file ####
+library(readxl)
+Headcount_Details <- read_excel("initial_data/Headcount Details.xlsx")
+View(Headcount_Details)
+
+Headcount_Details 
+
+Headcount_Details %>% 
+  mutate(row = row_number()) %>% 
+  filter(row != 1) %>% 
+  fill(`Program Campus`, .direction = "down")
