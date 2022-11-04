@@ -50,10 +50,21 @@ for (i in 1:length(file_list)){
 
 `classapp users.csv` <- rename(`classapp users.csv`, Goal.Sessions = Sessions)
 
+appt_only_users.csv <- rename(appt_only_users.csv, Segment = Segment.y, Event.count = Event.count.y, 
+                              Stream.name = Stream.name.y, Namespace.ID = Namespace.ID.y, Sessions = Sessions.y, 
+                              App.instance.ID = User.ID)
+
 # add to all CC users
 All_CC_user_Aug15_Oct25 <- left_join(All_CC_user_Aug15_Oct25.csv, `users of cat cloud services and appointments page.csv`)
 All_CC_user_Aug15_Oct25 <- left_join(All_CC_user_Aug15_Oct25, `users who have added or edited class item.csv`) %>% 
                               left_join(`classapp users.csv`)
+appt_use <- left_join(appt_only_users.csv, All_CC_user_Aug15_Oct25)
+
+# All_CC_user_Aug15_Oct25 <- left_join(All_CC_user_Aug15_Oct25, appt_only_users.csv)
+
+# combine the rows
+# All_CC_user_Aug15_Oct25 <- rbind(single_use, All_CC_user_Aug15_Oct25)
+
 #### merge updated catcloud users to goals and users add or edit ####
 # Cat_appt <- rbind(CC_Users_Making_Appts_Aug15_Oct25.csv, CC_Users_Not_Appts_Aug15_Oct25.csv)
 
@@ -66,6 +77,9 @@ Cat_UserID <- All_CC_user_Aug15_Oct25 %>%
 
 #### merge sfcontact data with google
 Cat_SF <- left_join(Cat_UserID, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
+
+appt_use <- left_join(appt_use, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID")) %>% 
+  distinct()
 # new_Cat_SF <- Cat_SF %>% 
 #   left_join(Cat_SF, `20221021_student enrollment data from SF.csv`, by = c("Email"="Email"))
 
@@ -86,16 +100,31 @@ Cat_SF <- left_join(Cat_UserID, sf_users_IDs_emails.csv, by = c("App.instance.ID
 # not_Cat_SF <- anti_join(Updated_CatCloud_Users.csv, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
 
 Cat_SF <- Cat_SF %>% 
-  select(App.instance.ID, Sessions, 
+  select(App.instance.ID, Sessions, Segment,
          Appt.Sessions, Edit.Sessions, Goal.Sessions,
          First.Name, Last.Name,
          Last.Login, Email) %>% 
   distinct()
 
+appt_use <- appt_use %>% 
+  select(App.instance.ID, Sessions, Segment,
+         Appt.Sessions, Edit.Sessions, Goal.Sessions,
+         First.Name, Last.Name,
+         Last.Login, Email) %>% 
+  distinct()
+
+
+# take out the duplicated Appt only users
+appt_filter <- Cat_SF %>% 
+  subset(!App.instance.ID %in% appt_use$App.instance.ID) 
+
+# combine the rows
+non_duplicated_appt <- rbind(appt_use, appt_filter) %>% 
+  distinct()
 #### merge all current students based on emails to CatSF ####
 
 #### merge in new sf student data ####
-Cat_SF_enroll <- left_join(Cat_SF, `20221021_student enrollment data from SF.csv`) %>% 
+Cat_SF_enroll <- left_join(non_duplicated_appt, `20221021_student enrollment data from SF.csv`) %>% 
   distinct()# no need to add , by = c("Email"="Email")
 
 unique(Cat_SF_enroll$Career)
@@ -155,7 +184,7 @@ Cat_SF_enroll <- Cat_SF_enroll %>%
   dplyr::mutate(Goal = ifelse(Goal.Sessions > 0, 1, 0))
 
 
-write_named_csv(Cat_SF_enroll)
+# write_named_csv(Cat_SF_enroll)
 
 #### find number of categories in given groups ####
 Headcount_Details.csv %>% 
@@ -164,6 +193,8 @@ Headcount_Details.csv %>%
 
 #### subset the dates to post 8/15 ####
 Cat_SF_enroll$last_login2 <- strptime(Cat_SF_enroll$Last.Login,"%m/%d/%Y %H:%M",tz="GMT")
+
+#### new dataset with filtered dates ####
 Cat_date_filter <- Cat_SF_enroll %>% 
   filter(last_login2 > "2022-08-14 16:25:00 GMT")
 
@@ -199,16 +230,60 @@ Cat_class_users_count <-  Cat_date_filter  %>%
   group_by(Class_Standing_recode) %>% 
   count(Class_Standing_recode, name = "total_class_users")
 
-Cat_date_filter  %>% 
-              filter(!is.na(Class_Standing_recode)) %>% 
-              filter(!is.na(Email)) %>% 
-              select(App.instance.ID, Class_Standing_recode, Appt.Sessions) %>% 
-              distinct() %>% 
-              group_by(Appt.Sessions) %>% 
-              count(Class_Standing_recode, name = "N_users") %>% 
-              left_join(Cat_class_users_count) %>% 
-  mutate(proportion = N_users/total_class_users) 
+segment_table <- Cat_date_filter  %>%
+              filter(!is.na(Class_Standing_recode)) %>%
+              filter(!is.na(Email)) %>%
+              select(App.instance.ID, Class_Standing_recode, Segment) %>%
+              distinct() %>%
+              group_by(Segment) %>%
+              count(Class_Standing_recode, name = "N_users") %>%
+              left_join(Cat_class_users_count) %>%
+  mutate(proportion = N_users/total_class_users)
 
+# OD21 <- OD21 %>%
+#   mutate(OPEN = case_when(
+#     # "OPEN" will be == 2
+#     APP == 1 ~ 2,
+#     (SCO12 >= 1 & SCO12 <= 50) ~ 2,
+#     NOW == 1 ~ 2,
+#     EWEEK == 1 ~ 2,
+#     ROLL == 1 & (AT == 1 | AT == 2) ~ 2,
+#     ROLL == 1 & AT != 1 & AT != 2 & AT != 3 & AT != -8 ~ 2,
+#     
+#     # "OPEN" will be == -8
+#     ROLL == 1 & AT == -8 ~ -8,
+#     APP == -8 | NOW == -8 | ROLL == -8 | EWEEK == -8 ~ -8,
+#     AGE == 16 & (SCO12 == 97 | SCO12 == -9) ~ -8,
+#     
+#     # "OPEN" will be == 1
+#     TRUE ~ 1
+#   )
+
+mydata <- tibble(ID = c("s1", "s2", "s3", "s4", "s5", "s6"),
+                 Goals = c(1, NA, 1, 1, 1, NA),
+                 Appts = c(1, 1, NA, NA, 1, NA),
+                 Edits = c(NA, 1, 1, NA, 1, 1))
+
+mydata %>% 
+  mutate(Goals = ifelse(!is.na(Goals), "G", ""),
+         Appts = ifelse(!is.na(Appts), "A", ""),
+         Edits = ifelse(!is.na(Edits), "E", ""),
+         Total = str_c(Goals, Appts, Edits))
+
+# or 
+mydata %>% 
+  mutate(across(-ID, .fns = ~ifelse(!is.na(.x), 
+                                    str_extract(cur_column(), "^."), "")),
+         Total = str_c(Goals, Appts, Edits))
+
+
+Cat_date_filter <- Cat_date_filter %>% 
+  mutate(Goals = ifelse(!is.na(Goal), "G", ""),
+         Appts = ifelse(!is.na(Appt), "A", ""),
+         Edits = ifelse(!is.na(Edit), "E", ""),
+         Total = str_c(Goals, Appts, Edits))
+
+write_named_csv(Cat_date_filter)
 # cat_sf_full  %>% 
 #   select(App.instance.ID, Class_Standing_recode, Appt.Sessions) %>% 
 #   distinct() %>% 
@@ -220,24 +295,7 @@ Cat_date_filter  %>%
 Cat_date_filter %>%   
   select(App.instance.ID, Campus, Email) %>% 
   distinct() %>% 
-  count() # 22086
-
-#### check for single session users
-single_use_cc <- cat_sf_full %>% 
-  filter(Sessions==1) %>% 
-  distinct()
-
-
-single_use_table <- cat_sf_full %>% 
-  count(Class_Standing_recode, name = "All_students_program") %>% 
-  left_join(single_use_cc %>%   
-              filter(last_login2 > "2022-08-14 16:25:00 GMT") %>% 
-              select(App.instance.ID, Class_Standing_recode) %>% 
-              distinct() %>% 
-              # rename(Academic.Program_recode = Primary.College_recode)    %>% 
-              count(Class_Standing_recode, name = "single_use_count")) %>% 
-  mutate(proportion = single_use_count/All_students_program)
-
+  count() # 22111
 
 
 withDegree_CC <- Cat_date_filter %>% 
@@ -309,10 +367,6 @@ Academic_program_table <- Headcount_Details.csv %>%
 write_named_csv(Academic_program_table)
 
 
-
-
-write_named_csv(Cat_date_filter)
-
 # merge in majors to cat_sf_enroll2
 Cat_SF_enroll_1 <- Cat_SF_enroll %>% 
   select(-Primary.College, -Primary.College.Code, -Primary.College_recode, -Degree) %>% 
@@ -322,6 +376,26 @@ Cat_SF_enroll_1 <- Cat_SF_enroll %>%
 
 cat_sf_full <- left_join(Cat_SF_enroll_1, Cat_SF_wide) %>%
   distinct()
+
+
+#### check for single session users
+single_use_cc <- cat_sf_full %>% 
+  filter(Sessions==1) %>% 
+  distinct()
+
+
+single_use_table <- cat_sf_full %>% 
+  count(Class_Standing_recode, name = "All_students_program") %>% 
+  left_join(single_use_cc %>%   
+              filter(last_login2 > "2022-08-14 16:25:00 GMT") %>% 
+              select(App.instance.ID, Class_Standing_recode) %>% 
+              distinct() %>% 
+              # rename(Academic.Program_recode = Primary.College_recode)    %>% 
+              count(Class_Standing_recode, name = "single_use_count")) %>% 
+  mutate(proportion = single_use_count/All_students_program)
+
+
+
 ####
 cc_count <-  cat_sf_full  %>%  
   filter(last_login2 > "2022-08-14 16:25:00 GMT") %>% 
@@ -375,6 +449,16 @@ Cat_SF_enroll$Campus_recode <- recode(Cat_SF_enroll$Campus,
                                "Southern Arizona" = "Southern Arizona", 
                                "University of Arizona - Main" = "University of Arizona - Main", "NA" = "Other")
 
+Cat_date_filter$Campus_recode <- recode(Cat_date_filter$Campus,
+                                      "Arizona Global" = "Arizona Global & AG Direct",
+                                      "Arizona Global Direct" = "Arizona Global & AG Direct",
+                                      "Arizona Online" = "Arizona Online", 
+                                      "Community Campus" = "Community Campus", 
+                                      "Distance" = "Distance", "Phoenix"="Phoenix",
+                                      "Southern Arizona" = "Southern Arizona", 
+                                      "University of Arizona - Main" = "University of Arizona - Main", "NA" = "Other")
+
+write_named_csv(Cat_date_filter)
 #### campus tables ####
 Campus_table <- Headcount_Details.csv %>% 
   count(Program.Campus_recode, wt = Fall.2022, name = "All_students_campus")%>% 
