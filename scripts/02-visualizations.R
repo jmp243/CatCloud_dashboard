@@ -7,16 +7,16 @@ library(lattice)
 library(latticeExtra)      
 
 #### get the top N majors ####
-count_Majors <- table(Cat_SF_Students$Primary.Major.Plan)  
+count_Majors <- table(cat_sf_full$Study1)  
 
 print (count_Majors)
 
-Cat_SF_Students$Primary.Major.Plan <- factor(Cat_SF_Students$Primary.Major.Plan)
-levels(Cat_SF_Students$Primary.Major.Plan)
+cat_sf_full$Study1 <- factor(cat_sf_full$Study1)
+levels(cat_sf_full$Study1)
 
 ####
-Cat_SF_Students %>%
-  group_by(Primary.Major.Plan) %>%
+cat_sf_full %>%
+  group_by(Study1) %>%
   top_n(2, Cumulative.GPA)
 
 #### visualizations ####
@@ -38,17 +38,17 @@ Cat_SF_Students %>%
 # print(plot)
 
 # top 20 undergraduate majors
-d2 <- Cat_SF_Students %>%
-  count(Primary.Major.Plan) %>%
+d2 <- cat_sf_full %>%
+  count(Study1) %>%
   top_n(20) %>%
-  arrange(desc(n, Primary.Major.Plan)) %>%
-  mutate(Primary.Major.Plan = factor(Primary.Major.Plan, levels = unique(Primary.Major.Plan)))
+  arrange(desc(n, Study1)) %>%
+  mutate(Study1 = factor(Study1, levels = unique(Study1)))
 
-GPA_top20_major <- Cat_SF_Students %>%
-  filter(Primary.Major.Plan %in% d2$Primary.Major.Plan) %>%
+GPA_top20_major <- cat_sf_full %>%
+  filter(Study1 %in% d2$Study1) %>%
   filter(Career == "Undergraduate") %>% 
-  mutate(Primary.Major.Plan = factor(Primary.Major.Plan, levels = levels(d2$Primary.Major.Plan))) %>%
-  ggplot(aes(x = Primary.Major.Plan, y = Cumulative.GPA, fill = Primary.Major.Plan)) +
+  mutate(Study1 = factor(Study1, levels = levels(d2$Study1))) %>%
+  ggplot(aes(x = Study1, y = Cumulative.GPA, fill = Study1)) +
   geom_violin() +
   ylab("Cumulative GPA") +
   xlab("Majors") +
@@ -81,13 +81,13 @@ hist_ugrad
 
 #### what do do about class app ####
 
-g <- ggplot(Cat_SF_Students[which(Cat_SF_Students$Goals.Event.count>0),]) + 
-  stat_summary(mapping = aes(x=Academic.Level...Beginning.of.Term, y=Goals.Event.count, fill = Career), fun = "sum", geom = "bar", 
+g <- ggplot(cat_sf_full[which(cat_sf_full$Goals.Event.count>0),]) + 
+  stat_summary(mapping = aes(x=Class_Standing_recode, y=Goals.Event.count, fill = Career), fun = "sum", geom = "bar", 
                na.rm = TRUE, inherit.aes = FALSE) +
   ylab("Academic Level") +
   xlab("Count of Goals Users") +
   labs(title = "Academic Levels of Goal Setters", fill = "Academic Career") +
-  theme(legend.position = c(0.15, 0.75), axis.text.x = element_text(angle = -70, hjust = 0, vjust = 0)) 
+  theme(legend.position = c(0.85, 0.75), axis.text.x = element_text(angle = -70, hjust = 0, vjust = 0)) 
 
 g 
 
@@ -130,3 +130,61 @@ add_goal <- add_goal +   scale_fill_manual(name = NULL,
                                           'Pharmacy',
                                           'Goals'))
 add_goal
+
+#### make an UpSetR plot ####
+upset_plot_df <- Cat_date_filter %>% 
+  select(`App-instance ID`, Appt, Edit, Goal) %>% 
+  distinct() 
+upset_plot_df <- upset_plot_df %>% 
+  select(-`App-instance ID`) %>% 
+  data.frame() %>%
+  # t() %>% # transpose the result, ugh
+  as_tibble()
+upset_plot_df[is.na(upset_plot_df)] <- 0
+upset_plot_df <- upset_plot_df %>% 
+  filter(Appt== 1 | Edit ==1 |Goal==1) %>%
+  ungroup()
+# list_to_matrix(upset_plot_df)
+
+# text_scale_options1 <- c(1, 1, 1, 1, 0.75, 1)
+# text_scale_options2 <- c(1.3, 1.3, 1, 1, 2, 0.75)
+# text_scale_options3 <- c(1.5, 1.25, 1.25, 1, 2, 1.5)
+# 
+# main_bar_col <- c("violetred4")
+# sets_bar_col <- c("turquoise4")
+# matrix_col <- c("slateblue4")
+# shade_col <- c("wheat4")
+# 
+# mb_ratio1 <- c(0.55,0.45)
+
+set_vars <- c("Appt", "Edit", "Goal")
+
+# upset(upset_plot_df, 
+#       sets = set_vars,
+#       empty.intersections=FALSE,
+#       mb.ratio = mb_ratio1, 
+#       order.by = "freq",
+#       show.numbers = FALSE,
+#       point.size = 2, 
+#       line.size = 1,
+#       text.scale=text_scale_options3,
+#       main.bar.color = main_bar_col,
+#       sets.bar.color = sets_bar_col,
+#       matrix.color = matrix_col,
+#       shade.color = shade_col)
+
+# #### another attempt with ComplexUpset ####
+library(ComplexUpset)
+set_vars <- c("Appt", "Edit", "Goal")
+names(set_vars) <- set_vars
+Cat_date_filter %>% print(n = nrow(Cat_date_filter))
+# 
+# 
+# symptom_mat <- map_dfc(subsets, str_detect, symptoms) %>%
+#   data.frame() %>%
+#   t() %>% # transpose the result, ugh
+#   as_tibble()
+# 
+# colnames(symptom_mat) <- symptoms
+upset(data = upset_plot_df, intersect = set_vars, set_sizes = FALSE) +
+  labs(title = "Usage of CatCloud Tools")
