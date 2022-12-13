@@ -2,6 +2,7 @@
 # Jung Mee Park
 # 2022-23-09
 # 2022-17-10 files have been updated
+# last run 2022-12-12
 # new column for campus code
 
 #### load libraries ####
@@ -55,7 +56,7 @@ for (i in 1:length(file_list)){
          read.csv(paste(folder,"/", file_list[i], sep=''))
   )}
 
-CC_all <- read_csv("initial_data/CC_all_Nov15.csv", skip=6)
+CC_all <- read_csv("initial_data/CC_all_Dec11_Date.csv", skip=6)
 CC_all <- CC_all %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(9:10))
@@ -124,6 +125,7 @@ Cat_UserID <- CC_all %>%
 
 #### merge sfcontact data with google
 Cat_SF <- left_join(Cat_UserID, sf_users_IDs_emails.csv, by = c("App-instance ID" = "User.ID"))
+
 
 # appt_use <- left_join(appt_use, sf_users_IDs_emails.csv, by = c("App-instance ID" = "User.ID")) %>% 
 #   distinct()
@@ -456,7 +458,6 @@ single_use_cc <- cat_sf_full %>%
   filter(Sessions==1) %>% 
   distinct()
 
-
 single_use_table <- cat_sf_full %>% 
   count(Class_Standing_recode, name = "All_students_program") %>% 
   left_join(single_use_cc %>%   
@@ -598,30 +599,47 @@ detailed_class_standing_table <- Headcount_Details.csv %>%
 
 write_named_csv(detailed_class_standing_table)
 ###################################### END for TABLEAU Analysis #########################
+### EPR 
+EPR_data <- left_join(SF_EPR_users.csv, Cat_date_filter, by = c("Student.Email" = "Email")) %>% 
+  select(-c(Date, last_login2)) %>% 
+  distinct()
+
+EPR_data <-EPR_data %>%
+  select(Early.Progress.Reports.Student..Created.Date, Early.Progress.Reports.Student..Early.Progress.Report.Name,
+         Student.Email, Instructor.NetId, Acknowledged, Feedback.Type.1, Feedback.Type.2, Has.Additional.Comments,
+         Course.Name, Course.Id, `App-instance ID`, First.Name, Last.Name, NetID) %>%
+  filter(!is.na(`App-instance ID`)) %>% 
+  distinct()
+
+write_named_csv(EPR_data)
+# EPR_data %>%
+#   filter(!is.na(`App-instance ID`)) %>% 
+#   distinct()
+
 # freshmen who made an appt 
-freshman_cc <- Cat_date_filter %>% 
-  filter(Class_Standing_recode == "Freshman") %>% 
-  select(App.instance.ID, Class_Standing_recode, Appt) %>% 
-  distinct() %>% 
-  group_by(Class_Standing_recode) %>% 
-  count(Class_Standing_recode, name = "total_class_users")
-
-cat_sf_full  %>% 
-  select(App.instance.ID, Class_Standing_recode, Appt.Sessions) %>% 
-  distinct() %>% 
-  group_by(Appt.Sessions) %>% 
-  count(Class_Standing_recode, name = "N_users") %>% 
-  left_join(Cat_class_users_count) %>% 
-  mutate(proportion = N_users/total_class_users) 
-
-Cat_date_filter %>% 
-  select(App.instance.ID, Class_Standing_recode, Appt) %>% 
-  filter(Class_Standing_recode == "Freshman") %>% 
-  filter(!is.na(Class_Standing_recode)) %>% 
-  group_by(Appt) %>% 
-  count(Appt, name = "Appt_freshman")  %>% 
-  # left_join(freshman_cc) %>% 
-  mutate(proportion = Appt_freshman/6864)
+# freshman_cc <- Cat_date_filter %>% 
+#   filter(Class_Standing_recode == "Freshman") %>% 
+#   select(App.instance.ID, Class_Standing_recode, Appt) %>% 
+#   distinct() %>% 
+#   group_by(Class_Standing_recode) %>% 
+#   count(Class_Standing_recode, name = "total_class_users")
+# 
+# cat_sf_full  %>% 
+#   select(App.instance.ID, Class_Standing_recode, Appt.Sessions) %>% 
+#   distinct() %>% 
+#   group_by(Appt.Sessions) %>% 
+#   count(Class_Standing_recode, name = "N_users") %>% 
+#   left_join(Cat_class_users_count) %>% 
+#   mutate(proportion = N_users/total_class_users) 
+# 
+# Cat_date_filter %>% 
+#   select(App.instance.ID, Class_Standing_recode, Appt) %>% 
+#   filter(Class_Standing_recode == "Freshman") %>% 
+#   filter(!is.na(Class_Standing_recode)) %>% 
+#   group_by(Appt) %>% 
+#   count(Appt, name = "Appt_freshman")  %>% 
+#   # left_join(freshman_cc) %>% 
+#   mutate(proportion = Appt_freshman/6864)
 
 #### CatCloud users with at least one ClassApp use #### 
 CC_Edit <- cat_sf_full %>% 
@@ -677,7 +695,7 @@ UG_campus_table <- UG_Headcount %>%
 UG_Acad_prog_table <- UG_Headcount %>% 
   count(Academic.Program, wt = Fall.2022, name = "All_students_program") %>% 
   left_join(UG_Cat_users %>%    
-              select(App.instance.ID, Primary.College) %>% 
+              select(`App-instance ID`, Primary.College) %>% 
               distinct() %>% 
               rename(Academic.Program = Primary.College)    %>% 
               count(Academic.Program, name = "N_users_program")) %>% 
@@ -690,7 +708,7 @@ write_named_csv(UG_Acad_prog_table)
 All_class_standing_table <- Headcount_Details.csv %>% 
   count(Career, wt = Fall.2022, name = "All_students_career") %>% 
   left_join(Cat_SF_enroll %>%  
-              select(App.instance.ID, Career) %>% 
+              select(`App-instance ID`, Career) %>% 
               distinct() %>% 
               count(Career, name = "N_users_career")) %>% 
   mutate(proportion = N_users_career/All_students_career)
