@@ -56,7 +56,7 @@ for (i in 1:length(file_list)){
          read.csv(paste(folder,"/", file_list[i], sep=''))
   )}
 
-CC_all <- read_csv("initial_data/CC_all_Dec11_Date.csv", skip=6)
+CC_all <- read_csv("initial_data/CC_all_Dec14_Date.csv", skip=6)
 CC_all <- CC_all %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(9:10))
@@ -124,7 +124,7 @@ Cat_UserID <- CC_all %>%
   filter(`Namespace ID` == "USER_ID") # keep only the cases we can track
 
 #### merge sfcontact data with google
-Cat_SF <- left_join(Cat_UserID, sf_users_IDs_emails.csv, by = c("App-instance ID" = "User.ID"))
+Cat_SF <- left_join(Cat_UserID, sf_users_IDs_emails.csv, by = c("App-instance ID" = "User.ID")) 
 
 
 # appt_use <- left_join(appt_use, sf_users_IDs_emails.csv, by = c("App-instance ID" = "User.ID")) %>% 
@@ -284,7 +284,7 @@ Cat_SF_enroll <- Cat_SF_enroll %>%
 Cat_SF_enroll$last_login2 <- as.Date(as.character(Cat_SF_enroll$Date), format='%Y%m%d')
 #### new dataset with filtered dates ####
 Cat_date_filter <- Cat_SF_enroll %>% 
-  filter(last_login2 > "2022-08-14 16:25:00 GMT")
+  filter(last_login2 > "2022-08-14 06:25:00 GMT")
 
 Cat_date_filter  %>%
   select(`App-instance ID`, Email, Primary.College) %>%
@@ -386,13 +386,15 @@ Cat_date_filter %>%
   count() # 22111
 
 
-withDegree_CC <- Cat_date_filter %>% 
-  # filter(!is.na(Degree)) %>% 
-  # filter(Degree != "")
-  select(-Degree, -Primary.College.Code) %>% 
-  distinct()
+# withDegree_CC <- Cat_date_filter %>% 
+#   # filter(!is.na(Degree)) %>% 
+#   # filter(Degree != "")
+#   select(-Degree, -Primary.College.Code) %>% 
+#   distinct()
   # summarise(across(Class_Standing_recode, list(n = ~length(.x), prop = ~sum(.x == 1) / n())))
-Cat_SF_wide <- withDegree_CC %>%
+
+# Cat_SF_wide <- withDegree_CC %>%
+Cat_SF_wide <- Cat_date_filter %>%
   group_by(`App-instance ID`) %>%
   mutate(
     group = row_number()
@@ -553,7 +555,7 @@ Cat_date_filter %>%
   count()
 
 Cat_SF_enroll %>%   
-  filter(last_login2 > "2022-08-14 16:25:00 GMT") %>% 
+  filter(last_login2 > "2022-08-14 06:25:00 GMT") %>% 
   select(`App-instance ID`, last_login2) %>% 
   distinct() %>% 
   group_by(last_login2) %>% 

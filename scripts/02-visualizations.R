@@ -131,19 +131,7 @@ add_goal <- add_goal +   scale_fill_manual(name = NULL,
                                           'Goals'))
 add_goal
 
-#### make an UpSetR plot ####
-upset_plot_df <- Cat_date_filter %>% 
-  select(`App-instance ID`, Appt, Edit, Goal) %>% 
-  distinct() 
-upset_plot_df <- upset_plot_df %>% 
-  select(-`App-instance ID`) %>% 
-  data.frame() %>%
-  # t() %>% # transpose the result, ugh
-  as_tibble()
-upset_plot_df[is.na(upset_plot_df)] <- 0
-upset_plot_df <- upset_plot_df %>% 
-  filter(Appt== 1 | Edit ==1 |Goal==1) %>%
-  ungroup()
+
 # list_to_matrix(upset_plot_df)
 
 # text_scale_options1 <- c(1, 1, 1, 1, 0.75, 1)
@@ -175,6 +163,19 @@ set_vars <- c("Appt", "Edit", "Goal")
 
 # #### another attempt with ComplexUpset ####
 library(ComplexUpset)
+#### make an UpSetR plot ####
+upset_plot_df <- Cat_date_filter %>% 
+  select(`App-instance ID`, Appt, Edit, Goal) %>% 
+  distinct() 
+upset_plot_df <- upset_plot_df %>% 
+  select(-`App-instance ID`) %>% 
+  data.frame() %>%
+  # t() %>% # transpose the result, ugh
+  as_tibble()
+upset_plot_df[is.na(upset_plot_df)] <- 0
+upset_plot_df <- upset_plot_df %>% 
+  filter(Appt== 1 | Edit ==1 |Goal==1) %>%
+  ungroup()
 set_vars <- c("Appt", "Edit", "Goal")
 names(set_vars) <- set_vars
 Cat_date_filter %>% print(n = nrow(Cat_date_filter))
@@ -188,3 +189,4 @@ Cat_date_filter %>% print(n = nrow(Cat_date_filter))
 # colnames(symptom_mat) <- symptoms
 upset(data = upset_plot_df, intersect = set_vars, set_sizes = FALSE) +
   labs(title = "Usage of CatCloud Tools")
+
