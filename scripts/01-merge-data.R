@@ -35,18 +35,31 @@ write_named_csv <- function(x)
 #### read in data ####
 getwd()
 
-# #### read in excel file ####
-# library(readxl)
-# Headcount_Details <- read_excel("initial_data/Headcount Details.xlsx")
-# View(Headcount_Details)
-# 
-# Headcount_Details 
-# 
-# Headcount_Details %>% 
-#   mutate(row = row_number()) %>% 
-#   filter(row != 1) %>% 
-#   fill(`Program Campus`, .direction = "down")
+#### read in excel file ####
+library(readxl)
+Headcount_Details <- read_excel("initial_data/Spring2023_Headcount Details(2).xlsx")
+View(Headcount_Details)
 
+Headcount_Details
+
+Headcount <- Headcount_Details %>%
+  mutate(row = row_number()) %>%
+  filter(row != 1) %>%
+  fill(`Program Campus`, .direction = "down") %>% 
+  fill(`Career`, .direction = "down") %>% 
+  fill(`Academic Program`, .direction = "down") %>% 
+  fill(`Academic Level`, .direction = "down") %>% 
+  fill(`First Generation Flag`, .direction = "down") %>% 
+  fill(`Pell Recipient Flag`, .direction = "down") %>%
+  fill(`Enrolled Flag`, .direction = "down")
+  filter(`Program Campus` != `Rows 1 - 642 (All Rows)`)
+
+table(Headcount$`Program Campus`)
+
+Headcount_Details <- Headcount %>% 
+  filter(`Program Campus` != "Rows 1 - 642 (All Rows)")
+
+# read in more data
 folder <- "/Users/jungmeepark/Documents/Trellis/CatCloud_dashboard/initial_data"      # path to folder that holds multiple .csv files
 file_list <- list.files(path=folder, pattern="*.csv") # create list of all .csv files in folder
 
@@ -56,12 +69,23 @@ for (i in 1:length(file_list)){
          read.csv(paste(folder,"/", file_list[i], sep=''))
   )}
 
-CC_all <- read_csv("initial_data/CC_all_Dec14_Date.csv", skip=6)
-CC_all <- CC_all %>% 
+CC_all_a <- read_csv("initial_data/CC_all_Aug14_to_Oct31_2022.csv", skip=6)
+CC_all_a <- CC_all_a %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(9:10))
 
-# CC_all <- rename(CC_all, Namespace.ID = `Namespace ID`,
+CC_all_b <- read_csv("initial_data/CC_all_Nov1_to_Dec15_2022.csv", skip=6)
+CC_all_b <- CC_all_b %>% 
+  filter(!is.na(`App-instance ID`)) %>% 
+  select(-c(9:10))
+
+CC_all_c <- read_csv("initial_data/CC_all_Dec16_to_Jan19_2023.csv", skip=6)
+CC_all_c <- CC_all_c %>% 
+  filter(!is.na(`App-instance ID`)) %>% 
+  select(-c(9:10))
+
+CC_all <- rbind(CC_all_a, CC_all_b, CC_all_c)
+  # CC_all <- rename(CC_all, Namespace.ID = `Namespace ID`,
 # Event.count = `Event count`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`)
 
 #### check files #### 
@@ -69,15 +93,26 @@ CC_all <- CC_all %>%
 # Users_for_Add_or_Edit.csv <- rename(Users_for_Add_or_Edit.csv, Add.Event.Count = Event.count)
 # Users_Goals.csv <- rename(Users_Goals.csv, Goals.Event.Count = Goals.Event.count)
 
-CC_appt <- read_csv("initial_data/appt_users.csv", skip = 6)
-CC_appt  <- CC_appt %>% 
+# appointment users
+CC_appt1 <- read_csv("initial_data/appt_users.csv", skip = 6)
+CC_appt1  <- CC_appt1 %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8))  
-CC_appt <- rename(CC_appt, Appt.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
-CC_appt <- CC_appt %>% 
+CC_appt1 <- rename(CC_appt1, Appt.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
+CC_appt1 <- CC_appt1 %>% 
   select(`App-instance ID`, Appt.Sessions)
 
+CC_appt2 <- read_csv("initial_data/appt_users2.csv", skip = 6)
+CC_appt2  <- CC_appt2 %>% 
+  filter(!is.na(`App-instance ID`)) %>% 
+  select(-c(7:8))  
+CC_appt2 <- rename(CC_appt2, Appt.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
+CC_appt2 <- CC_appt2 %>% 
+  select(`App-instance ID`, Appt.Sessions)
 
+CC_appt <- rbind(CC_appt1, CC_appt2)
+
+# add and edit users
 CC_edit <- read_csv("initial_data/add_edit_users.csv", skip = 6)
 CC_edit <- CC_edit %>% 
   filter(!is.na(`App-instance ID`)) %>% 
@@ -86,6 +121,7 @@ CC_edit <- rename(CC_edit, Edit.Sessions = Sessions)
 CC_edit <- CC_edit %>% 
   select(`App-instance ID`, Edit.Sessions)
 
+# goals users
 CC_goals <- read_csv("initial_data/goals_users.csv", skip = 6)
 CC_goals <- CC_goals %>% 
   filter(!is.na(`App-instance ID`)) %>% 
@@ -952,17 +988,7 @@ All_class_standing_table <- Headcount_Details.csv %>%
 # # na_Cat_SF <- left_join(df_na, sf_users_IDs_emails.csv, by = c("App.instance.ID" = "User.ID"))
 # write_named_csv(df_na)
 
-# #### read in excel file ####
-# library(readxl)
-# Headcount_Details <- read_excel("initial_data/Headcount Details.xlsx")
-# View(Headcount_Details)
-# 
-# Headcount_Details 
-# 
-# Headcount_Details %>% 
-#   mutate(row = row_number()) %>% 
-#   filter(row != 1) %>% 
-#   fill(`Program Campus`, .direction = "down")
+
 
 # library(janitor) # make clean names, remove constants
 # library(skimr) # function skim over a dataset
