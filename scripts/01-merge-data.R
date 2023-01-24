@@ -38,7 +38,7 @@ getwd()
 #### read in excel file ####
 library(readxl)
 Headcount_Details <- read_excel("initial_data/Spring2023_Headcount Details(2).xlsx")
-View(Headcount_Details)
+# View(Headcount_Details)
 
 Headcount_Details
 
@@ -52,7 +52,8 @@ Headcount <- Headcount_Details %>%
   fill(`First Generation Flag`, .direction = "down") %>% 
   fill(`Pell Recipient Flag`, .direction = "down") %>%
   fill(`Enrolled Flag`, .direction = "down")
-  filter(`Program Campus` != `Rows 1 - 642 (All Rows)`)
+
+# filter(`Program Campus` != `Rows 1 - 642 (All Rows)`)
 
 table(Headcount$`Program Campus`)
 
@@ -268,18 +269,33 @@ Cat_SF_enroll$Class_Standing_recode <- factor(Cat_SF_enroll$Class_Standing_recod
 
 unique(Cat_SF_enroll$Class_Standing_recode)
 
-unique(Headcount_Details.csv$Academic.Level)
+# unique(Headcount_Details.csv$Academic.Level)
+# 
+# Headcount_Details.csv$Academic.Level_recode <- recode(Headcount_Details.csv$Academic.Level,"Freshman" = "Freshman", "Sophomore" = "Sophomore", 
+#                                               "Junior" = "Junior", "Senior" = "Senior", 
+#                                               "Graduate" = "Graduate", "Masters" = "Graduate",
+#                                               "Professional Year 1" = "Graduate", "Professional Year 2" = "Graduate",
+#                                               "Professional Year 3" = "Graduate", "Professional Year 4" = "Graduate", 
+#                                               "Doctoral" = "Graduate", "NA" = "Other")
+# 
+# 
+# Headcount_Details.csv$Academic.Level_recode <- factor(Headcount_Details.csv$Academic.Level_recode, 
+#                                               levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate", "Other"))
 
-Headcount_Details.csv$Academic.Level_recode <- recode(Headcount_Details.csv$Academic.Level,"Freshman" = "Freshman", "Sophomore" = "Sophomore", 
-                                              "Junior" = "Junior", "Senior" = "Senior", 
-                                              "Graduate" = "Graduate", "Masters" = "Graduate",
-                                              "Professional Year 1" = "Graduate", "Professional Year 2" = "Graduate",
-                                              "Professional Year 3" = "Graduate", "Professional Year 4" = "Graduate", 
-                                              "Doctoral" = "Graduate", "NA" = "Other")
+unique(Headcount_Details$`Academic Level`)
+
+Headcount_Details$Academic.Level_recode <- recode(Headcount_Details$`Academic Level`,"Freshman" = "Freshman", "Sophomore" = "Sophomore", 
+                                                      "Junior" = "Junior", "Senior" = "Senior", 
+                                                      "Graduate" = "Graduate", "Masters" = "Graduate",
+                                                      "Professional Year 1" = "Graduate", "Professional Year 2" = "Graduate",
+                                                      "Professional Year 3" = "Graduate", "Professional Year 4" = "Graduate", 
+                                                      "Doctoral" = "Graduate", "NA" = "Other")
 
 
-Headcount_Details.csv$Academic.Level_recode <- factor(Headcount_Details.csv$Academic.Level_recode, 
-                                              levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate", "Other"))
+Headcount_Details$Academic.Level_recode <- factor(Headcount_Details$Academic.Level_recode, 
+                                                      levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate", "Other"))
+
+
 # create a counter if there is a appt session
 # Cat_SF_enroll_Appt <- Cat_SF_enroll %>%
 #   dplyr::mutate(
@@ -295,10 +311,13 @@ Cat_SF_enroll <- Cat_SF_enroll %>%
 # write_named_csv(Cat_SF_enroll)
 
 #### find number of categories in given groups ####
-Headcount_Details.csv %>% 
-  group_by(Academic.Program) %>% 
-  count(wt= Fall.2022)
+# Headcount_Details.csv %>% 
+#   group_by(Academic.Program) %>% 
+#   count(wt= Fall.2022)
 
+Headcount_Details%>%
+  group_by(`Academic Program`) %>%
+  count(wt= `Spring 2023`)
 
 #### recode Primary.College ####
 Cat_SF_enroll <- Cat_SF_enroll %>%
@@ -328,17 +347,21 @@ Cat_date_filter  %>%
   group_by(Primary.College) %>%
   count()
 
-unique(Headcount_Details.csv$Academic.Level)
-
+# unique(Headcount_Details.csv$Academic.Level)
+unique(Headcount_Details$`Academic Program`)
+unique(Headcount_Details$Academic.Level_recode)
 # Headcount_Details.csv$Academic.Level<- factor(Headcount_Details.csv$Academic.Level, 
 #                                        levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate",
 #                                                 "Masters", "Professional Year 1", 
 #                                                 "Professional Year 2",
 #                                                 "Professional Year 3", "Professional Year 4", "Doctoral"))
 
-Headcount_Details.csv %>% 
+# Headcount_Details.csv %>% 
+#   group_by(Academic.Level_recode) %>% 
+#   count(wt= Fall.2022)
+Headcount_Details %>% 
   group_by(Academic.Level_recode) %>% 
-  count(wt= Fall.2022)
+  count(wt= `Spring 2023`)
 
 Cat_SF_enroll %>% 
   select(`App-instance ID`, Class_Standing_recode) %>% 
@@ -419,7 +442,7 @@ Cat_date_filter %>%
 Cat_date_filter %>%   
   select(`App-instance ID`, Campus, Email) %>% 
   distinct() %>% 
-  count() # 22111
+  count() # 33781 as of Jan 23
 
 
 # withDegree_CC <- Cat_date_filter %>% 
