@@ -94,7 +94,7 @@ CC_all_c <- CC_all_c %>%
   filter(!is.na(`App-instance ID`)) %>%
   select(-c(9:10)) 
 # some anomalies on March 17 data from Google Analytics Homepage
-CC_all_d <- read_csv("initial_data/Spring2023/CC_all_Mar18-31_2023.csv", skip=6)
+CC_all_d <- read_csv("initial_data/Spring2023/CC_all_Mar18-Apr25_2023.csv", skip=6)
 CC_all_d <- CC_all_d %>%
   filter(!is.na(`App-instance ID`)) %>%
   select(-c(9:10))
@@ -106,7 +106,7 @@ CC_all_d <- CC_all_d %>%
 
 CC_all <- rbind(CC_all_a, CC_all_b, CC_all_c, CC_all_d)
 
-  # CC_all <- rename(CC_all, Namespace.ID = `Namespace ID`,
+# CC_all <- rename(CC_all, Namespace.ID = `Namespace ID`,
 # Event.count = `Event count`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`)
 
 #### check files #### 
@@ -133,6 +133,18 @@ CC_edit <- rename(CC_edit, Edit.Sessions = Sessions)
 CC_edit <- CC_edit %>% 
   select(`App-instance ID`, Edit.Sessions)
 
+# cases users
+CC_cases <- read_csv("initial_data/Spring2023/cat_cloud_cases_count.csv", skip = 6)
+CC_cases <- CC_cases %>% 
+  filter(!is.na(`Event name`)) %>% 
+  filter(Totals != 'Event count') %>% 
+  select(-c(1,8))  
+CC_cases <- rename(CC_cases, `App-instance ID` = `Event name`)
+CC_cases <- rename(CC_cases, Cases.Sessions = `Totals`)
+CC_cases <- CC_cases %>% 
+  select(`App-instance ID`, Cases.Sessions)
+
+CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
 # goals users
 CC_goals <- read_csv("initial_data/Spring2023/goals_users.csv", skip = 6)
 CC_goals <- CC_goals %>% 
@@ -146,7 +158,8 @@ CC_goals <- CC_goals %>%
 # add edits, goals, and appts to all CC users
 CC_all <- left_join(CC_all, CC_appt1) %>% 
           left_join(CC_edit) %>% 
-          left_join(CC_goals)
+          left_join(CC_goals) %>% 
+          left_join(CC_cases)
 
 Cat_UserID <- CC_all %>% 
   filter(`Namespace ID` == "USER_ID") # keep only the cases we can track
@@ -155,15 +168,13 @@ Cat_UserID <- CC_all %>%
 sf_users_IDs_emails_spring2023 <- sf_users_IDs_emails_spring2023.csv %>% 
   filter(Profile == "Employee Community User" | Profile == "All Student Community User" )
 
-
-
 #### merge sfcontact data with google
 Cat_SF <- left_join(Cat_UserID, sf_users_IDs_emails_spring2023, by = c("App-instance ID" = "User.ID")) 
 
 
 Cat_SF <- Cat_SF %>% 
   select(`App-instance ID`, Sessions, Date,
-         Appt.Sessions, Edit.Sessions, Goal.Sessions,
+         Appt.Sessions, Edit.Sessions, Goal.Sessions, Cases.Sessions,
          First.Name, Last.Name,
          Last.Login, Email) %>% 
   distinct()
@@ -265,6 +276,7 @@ unique(`student_Headcount Details(3).csv`$Academic.Level_recode)
 Cat_SF_enroll <- Cat_SF_enroll %>%
   dplyr::mutate(Appt = ifelse(Appt.Sessions > 0, 1, 0)) %>% 
   dplyr::mutate(Edit = ifelse(Edit.Sessions > 0, 1, 0)) %>% 
+  dplyr::mutate(Case = ifelse(Cases.Sessions > 0, 1, 0)) %>% 
   dplyr::mutate(Goal = ifelse(Goal.Sessions > 0, 1, 0))
 
 #### find number of categories in given groups ####
@@ -352,8 +364,9 @@ Cat_class_users_count <-  Cat_date_filter  %>%
 Cat_date_filter <- Cat_date_filter %>%
   mutate(Goals = ifelse(!is.na(Goal), "G", ""), 
          Appts = ifelse(!is.na(Appt), "A", ""),
+         Cases = ifelse(!is.na(Case), "C", ""),
          Edits = ifelse(!is.na(Edit), "E", ""),
-         Total = str_c(Goals, Appts, Edits)) # omit | (!is.na(Goal1) from line 348
+         Total = str_c(Goals, Appts, Cases, Edits)) # omit | (!is.na(Goal1) from line 348
 
 Cat_date_filter %>% 
   select(`App-instance ID`, Sessions, Total) %>% 
@@ -367,8 +380,8 @@ Cat_date_filter %>%
   distinct() %>% 
   count()
 
-Cat_date_filter %>% 
-  filter(Total == "E") 
+# Cat_date_filter %>% 
+#   filter(Total == "E") 
 # cat_sf_full  %>% 
 #   select(App.instance.ID, Class_Standing_recode, Appt.Sessions) %>% 
 #   distinct() %>% 
