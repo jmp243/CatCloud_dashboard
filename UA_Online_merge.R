@@ -20,6 +20,13 @@ names(spring_cc)
 spring_cc <- spring_cc %>% 
   rename(Campus.recode = Campus.recode1)
 
+# analysis of Fall 2022
+fall_cc %>% 
+  select(`App-instance ID`, Campus_recode) %>% 
+  distinct() %>% 
+  group_by(Campus_recode) %>%
+  count()
+  
 # rename columns to match fall and spring
 fall_cc_short <- fall_cc %>% 
   select(`App-instance ID`, Appt.Sessions, Edit.Sessions, Goal.Sessions, First.Name, Last.Name, Email, 
@@ -51,6 +58,9 @@ all_cc_short <- all_cc_short %>%
          Edits = ifelse(!is.na(Edit), "E", ""),
          Total = str_c(Goals, Appts, Edits)) # omit | (!is.na(Goal1) from line 348
 
+all_cc_short %>% 
+  select(`App-instance ID`) %>% 
+  count()
 #### Write csv #### 
 write_named_csv <- function(x) 
   write_csv(x, file = paste0(

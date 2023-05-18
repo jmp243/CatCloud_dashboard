@@ -178,7 +178,7 @@ upset_plot_df <- upset_plot_df %>%
   ungroup()
 set_vars <- c("Appt", "Edit", "Goal")
 names(set_vars) <- set_vars
-Cat_date_filter %>% print(n = nrow(Cat_date_filter))
+# Cat_date_filter %>% print(n = nrow(Cat_date_filter))
 # 
 # 
 # symptom_mat <- map_dfc(subsets, str_detect, symptoms) %>%
@@ -187,6 +187,15 @@ Cat_date_filter %>% print(n = nrow(Cat_date_filter))
 #   as_tibble()
 # 
 # colnames(symptom_mat) <- symptoms
-upset(data = upset_plot_df, intersect = set_vars, set_sizes = FALSE) +
+upset_plot <- upset(data = upset_plot_df, intersect = set_vars, set_sizes = FALSE) +
   labs(title = "Usage of CatCloud Tools")
+
+today <- Sys.Date()
+image_path = "/Users/jungmeepark/Documents/My Tableau Repository/Shapes/Rplots/"
+
+ggsave(filename = paste0(image_path,today,"upset_plot.png"),  
+       width = 6, height = 4, dpi = 150, units = "in", device='png')
+
+# 
+# ggsave(filename = file.path(image_path, '.png', plot = upset_plot))
 
