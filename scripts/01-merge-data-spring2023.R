@@ -52,7 +52,7 @@ library(readxl)
 Headcount_Details <- read_excel("initial_data/Spring2023/Spring2023_Headcount_Details.xlsx")
 # View(Headcount_Details)
 
-Headcount_Details
+# Headcount_Details
 
 Headcount <- Headcount_Details %>%
   mutate(row = row_number()) %>%
@@ -99,12 +99,17 @@ CC_all_d <- CC_all_d %>%
   filter(!is.na(`App-instance ID`)) %>%
   select(-c(9:10))
 
+CC_all_e <- read_csv("initial_data/Spring2023/CC_all_May16-Aug7_2023.csv", skip=6)
+CC_all_e <- CC_all_e %>%
+  filter(!is.na(`App-instance ID`)) %>%
+  select(-c(9:10))
+
 # CC_all <- read_csv("initial_data/Spring2023/CC_all_Jan4_Feb28_2023.csv", skip=6)
 # CC_all <- CC_all_b %>%
 #   filter(!is.na(`App-instance ID`)) %>%
 #   select(-c(9:10))
 
-CC_all <- rbind(CC_all_a, CC_all_b, CC_all_c, CC_all_d)
+CC_all <- rbind(CC_all_a, CC_all_b, CC_all_c, CC_all_d, CC_all_e)
 
 # CC_all <- rename(CC_all, Namespace.ID = `Namespace ID`,
 # Event.count = `Event count`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`)
@@ -119,6 +124,13 @@ CC_appt1 <- read_csv("initial_data/Spring2023/appt_users.csv", skip = 6)
 CC_appt1  <- CC_appt1 %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8))  
+
+CC_appt2 <- read_csv("initial_data/Spring2023/appt_users_May16-Aug7_2023.csv", skip = 6)
+CC_appt2  <- CC_appt2 %>% 
+  filter(!is.na(`App-instance ID`)) %>% 
+  select(-c(7:8)) 
+CC_appt1 <- rbind(CC_appt1, CC_appt2)
+
 CC_appt1 <- rename(CC_appt1, Appt.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 CC_appt1 <- CC_appt1 %>% 
   select(`App-instance ID`, Appt.Sessions)
@@ -129,16 +141,32 @@ CC_edit <- read_csv("initial_data/Spring2023/add_edit_users.csv", skip = 6)
 CC_edit <- CC_edit %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8))  
+CC_edit1 <- read_csv("initial_data/Spring2023/add_edit_users_Aug7_2023.csv", skip = 6)
+CC_edit1 <- CC_edit1 %>% 
+  filter(!is.na(`App-instance ID`)) %>% 
+  select(-c(7:8)) 
+CC_edit <- rbind(CC_edit, CC_edit1)
+
 CC_edit <- rename(CC_edit, Edit.Sessions = Sessions)
 CC_edit <- CC_edit %>% 
   select(`App-instance ID`, Edit.Sessions)
+
+
 
 # cases users
 CC_cases <- read_csv("initial_data/Spring2023/cat_cloud_cases_count.csv", skip = 6)
 CC_cases <- CC_cases %>% 
   filter(!is.na(`Event name`)) %>% 
   filter(Totals != 'Event count') %>% 
-  select(-c(1,8))  
+  select(-c(1,8)) 
+
+CC_cases1 <- read_csv("initial_data/Spring2023/cat_cloud_cases_count_Aug7_2023.csv", skip = 6)
+CC_cases1 <- CC_cases1 %>% 
+  filter(!is.na(`Event name`)) %>% 
+  filter(Totals != 'Event count') %>% 
+  select(-c(1,8)) 
+
+CC_cases <- rbind(CC_cases, CC_cases1)
 CC_cases <- rename(CC_cases, `App-instance ID` = `Event name`)
 CC_cases <- rename(CC_cases, Cases.Sessions = `Totals`)
 CC_cases <- CC_cases %>% 
@@ -149,7 +177,14 @@ CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
 CC_goals <- read_csv("initial_data/Spring2023/goals_users.csv", skip = 6)
 CC_goals <- CC_goals %>% 
   filter(!is.na(`App-instance ID`)) %>% 
-  select(-c(7:8))  
+  select(-c(7:8)) 
+
+CC_goals1 <- read_csv("initial_data/Spring2023/goals_users_Aug7_2023.csv", skip = 6)
+CC_goals1 <- CC_goals1 %>% 
+  filter(!is.na(`App-instance ID`)) %>% 
+  select(-c(7:8)) 
+CC_goals <- rbind(CC_goals, CC_goals1)
+
 CC_goals <- rename(CC_goals, Goal.Sessions = Sessions)
 CC_goals <- CC_goals %>% 
   select(`App-instance ID`, Goal.Sessions)
