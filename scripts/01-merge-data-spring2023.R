@@ -99,7 +99,7 @@ CC_all_d <- CC_all_d %>%
   filter(!is.na(`App-instance ID`)) %>%
   select(-c(9:10))
 
-CC_all_e <- read_csv("initial_data/Spring2023/CC_all_May16-Aug7_2023.csv", skip=6)
+CC_all_e <- read_csv("initial_data/Spring2023/CC_all_May16-Aug19_2023.csv", skip=6)
 CC_all_e <- CC_all_e %>%
   filter(!is.na(`App-instance ID`)) %>%
   select(-c(9:10))
@@ -141,7 +141,7 @@ CC_edit <- read_csv("initial_data/Spring2023/add_edit_users.csv", skip = 6)
 CC_edit <- CC_edit %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8))  
-CC_edit1 <- read_csv("initial_data/Spring2023/add_edit_users_Aug7_2023.csv", skip = 6)
+CC_edit1 <- read_csv("initial_data/Spring2023/add_edit_users_Aug19_2023.csv", skip = 6)
 CC_edit1 <- CC_edit1 %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8)) 
@@ -160,7 +160,7 @@ CC_cases <- CC_cases %>%
   filter(Totals != 'Event count') %>% 
   select(-c(1,8)) 
 
-CC_cases1 <- read_csv("initial_data/Spring2023/cat_cloud_cases_count_Aug7_2023.csv", skip = 6)
+CC_cases1 <- read_csv("initial_data/Spring2023/cat_cloud_cases_count_Aug19_2023.csv", skip = 6)
 CC_cases1 <- CC_cases1 %>% 
   filter(!is.na(`Event name`)) %>% 
   filter(Totals != 'Event count') %>% 
@@ -179,7 +179,7 @@ CC_goals <- CC_goals %>%
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8)) 
 
-CC_goals1 <- read_csv("initial_data/Spring2023/goals_users_Aug7_2023.csv", skip = 6)
+CC_goals1 <- read_csv("initial_data/Spring2023/goals_users_Aug19_2023.csv", skip = 6)
 CC_goals1 <- CC_goals1 %>% 
   filter(!is.na(`App-instance ID`)) %>% 
   select(-c(7:8)) 
@@ -732,17 +732,29 @@ Cat_headcount$Class_Standing_recode <- recode(Cat_headcount$`Class Standing`,"Fr
                                               "Prof 3" = "Graduate", "Prof 4" = "Graduate", 
                                               "Doctoral" = "Graduate", "NA" = "Other")
 
-
-# Cat_headcount$Class_Standing_recode <- factor(Cat_SF_enroll$Class_Standing_recode, 
-#                                               levels=c("Freshman", "Sophomore", "Junior", "Senior", "Graduate", "Other"))
-
 Cat_headcount <- Cat_headcount %>% 
   arrange(Sessions)
+
+write_named_csv(Cat_headcount)
 
 Cat_headcount %>% 
   group_by(Class_Standing_recode) %>% 
   count() %>% 
   distinct()
+
+Cat_headcount %>% 
+  group_by(Academic.Program_recode, Student.ID) %>% 
+  count() %>% 
+  distinct()
+
+Cat_headcount2 <- Cat_headcount %>% 
+  select(Student.ID, `App-instance ID`, Department, Academic.Level, Academic.Level_recode,
+         Academic.Program, Academic.Program_recode, Program.Campus_recode, Program.Campus_recode1, 
+         # Appt.Sessions, Edit.Sessions, Goal.Sessions, Cases.Sessions,
+         Appt, Edit, Case, Goal, last_login2,
+         Class_Standing_recode, Primary.College_recode, Campus.recode, Campus.recode1) %>% 
+  distinct()
+
 
 # Cat_headcount2 <- Cat_headcount %>% 
 #   select(-Academic.Program.Location, -Pell.Recipient.Flag, -First.Generation.Flag, 
