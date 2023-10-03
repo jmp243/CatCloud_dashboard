@@ -35,33 +35,71 @@ write_named_csv <- function(x)
 #### read in data ####
 getwd()
 
-# read in more data
-folder <- "/Users/jungmeepark/Documents/Trellis/CatCloud_dashboard/initial_data/Fall2023"      # path to folder that holds multiple .csv files
-file_list <- list.files(path=folder, pattern="*.csv") # create list of all .csv files in folder
-
-# read in each .csv file in file_list and create a data frame with the same name as the .csv file
-for (i in 1:length(file_list)){
-  assign(file_list[i], 
-         read.csv(paste(folder,"/", file_list[i], sep=''))
-  )}
+# # read in more data
+# folder <- "/Users/jungmeepark/Documents/Trellis/CatCloud_dashboard/initial_data/Fall2023"      # path to folder that holds multiple .csv files
+# file_list <- list.files(path=folder, pattern="*.csv") # create list of all .csv files in folder
+# 
+# # read in each .csv file in file_list and create a data frame with the same name as the .csv file
+# for (i in 1:length(file_list)){
+#   assign(file_list[i], 
+#          read.csv(paste(folder,"/", file_list[i], sep=''))
+#   )}
 
 # read in ad hod data
 # preliminary data cleaning was done in excel
 
+# ad_hoc_2023_no_totals <- read_csv("initial_data/Fall2023/ad_hoc_Sept_2023_no_totals.csv")
+# ad_hoc_2023_no_totals <- ad_hoc_2023_no_totals[-1:-2,]
+# 
+# write_named_csv(ad_hoc_2023_no_totals)
+
 library(data.table)
-ad_hoc_2023 <- read_csv("initial_data/Fall2023/ad_hoc_Aug_2023.csv")
+ad_hoc_2023 <- read_csv("initial_data/Fall2023/ad_hoc_Sept_2023_no_totals.csv")
 ad_hoc_2023 <- ad_hoc_2023[-1:-2,]
+
+# convert columns to numeric
+ad_hoc_2023 <- ad_hoc_2023%>% mutate_if(is.character, as.numeric)
+
+# rename and combine some columns
+df1  %>%
+  transmute(x = coalesce(x, y, z))
+
 write_named_csv(ad_hoc_2023)
 
-# table with no totals
-ad_hoc_2023_no_totals <- ad_hoc_2023[,-18:-19]
-write_named_csv(ad_hoc_2023_no_totals)
+# pivot the tables
+ad_hoc_date_table <-ad_hoc_2023 %>% 
+  pivot_longer(
+    cols = !`Page title-Date`, 
+    names_to = "Page title", 
+    values_to = "count"
+  )
+ 
+ad_hoc_date_table$`Page title` <- recode(ad_hoc_date_table$`Page title`,
+                                         "Services Calendar | CatCloud-Event count" = "Services Calendar-Event count", 
+                                         "Services Calendar | CatCloud-Sessions" = "Services Calendar-Sessions", 
+                                         "Home | CatCloud-Event count" = "Home-Event count", 
+                                         "Home | CatCloud-Sessions" = "Home-Sessions", 
+                                         "Hub Grades | The University of Arizona, Tucson, Arizona-Event count" = "Hub Grades-Event count", 
+                                         "Hub Grades | The University of Arizona, Tucson, Arizona-Sessions" = "Hub Grades-Sessions",
+                                         "Student Services | CatCloud-Event count" = "Student Services-Event count", 
+                                         "Student Services | CatCloud-Sessions"  = "Student Services-Sessions",
+                                         "My Calendar | CatCloud-Event count" = "Calendar-Event count", 
+                                         "My Calendar | CatCloud-Sessions" = "Calendar-Sessions", 
+                                         "Classes | CatCloud-Event count" = "Classes-Event count",
+                                         "Classes | CatCloud-Sessions" = "Classes-Sessions",
+                                         "Services Search | CatCloud-Event count"  = "Services Search-Event count", 
+                                         "Services Search | CatCloud-Sessions" = "Services Search-Sessions", 
+                                         "My Cases | CatCloud-Event count" = "Cases-Event count", 
+                                         "My Cases | CatCloud-Sessions" = "Cases-Sessions")
+# # table with no totals
+# ad_hoc_2023_no_totals <- ad_hoc_2023[,-18:-19]
+# write_named_csv(ad_hoc_2023_no_totals)
 
 library(janitor)
 library(magrittr)
 library(readxl)
 
-ad_hoc_no_totals <- read_csv("clean_data/clean_fall2023/ad_hoc_2023_no_totals.csv")
+ad_hoc_no_totals <- read_csv("initial_data/Fall2023/ad_hoc_Sept_2023_no_totals.csv")
 
 ad_hoc_date_table <-ad_hoc_no_totals %>% 
   pivot_longer(
