@@ -1,7 +1,7 @@
 # Jung Mee Park
 # 11-06-2023
 # retrieving catcloud data using a new skuid tag
-# last run 03-25-2024
+# last run 07-01-2024
 
 #### load libraries ####
 # library("googleAnalyticsR")
@@ -29,9 +29,9 @@ write_named_csv <- function(x)
 
 #### read in excel file ####
 # merge all CC users
-CC_all1 <- read_csv("initial_data/Spring2024/CC_all_Jan8-Feb29-2024.csv", skip=6)
-CC_all2 <- read_csv("initial_data/Spring2024/CC_all_Mar1-Apr30-2024.csv", skip=6)
-# CC_all3 <- read_csv("initial_data/Fall2023/CC_all_Nov27-Jan7-2024.csv", skip=6)
+CC_all1 <- read_csv("initial_data/Spring2024/CC_all_Jan8-Mar15-2024.csv", skip=6)
+CC_all2 <- read_csv("initial_data/Spring2024/CC_all_Mar16-May12-2024.csv", skip=6)
+CC_all3 <- read_csv("initial_data/Spring2024/CC_all_May13-Jun30-2024.csv", skip=6)
 
 CC_all1 <- CC_all1 %>%
   filter(!is.na(`Effective user ID`)) %>%
@@ -39,21 +39,30 @@ CC_all1 <- CC_all1 %>%
 
 CC_all2 <- CC_all2 %>%
   filter(!is.na(`Effective user ID`)) %>%
+  select(-c(9:10))
+
+CC_all3 <- CC_all3 %>%
+  filter(!is.na(`Effective user ID`)) %>%
   select(-c(9:10)) 
 
-CC_all <- rbind(CC_all1, CC_all2)
+CC_all <- rbind(CC_all1, CC_all2, CC_all3)
 
 # appointment users
-CC_appt1 <- read_csv("initial_data/Spring2024/appt-users-newID-Jan8-Feb29-2024.csv", skip = 6)
-CC_appt2 <- read_csv("initial_data/Spring2024/appt-users-newID-Mar1-Apr30-2024.csv", skip = 6)
+CC_appt1 <- read_csv("initial_data/Spring2024/appt-users-newID-Jan8-Mar15-2024.csv", skip = 6)
+CC_appt2 <- read_csv("initial_data/Spring2024/appt-users-newID-Mar16-May12-2024.csv", skip = 6)
+CC_appt3 <- read_csv("initial_data/Spring2024/appt-users-newID-May13-Jun30-2024.csv", skip = 6)
+
 CC_appt1  <- CC_appt1 %>% 
   filter(!is.na(`Effective user ID`)) %>% 
   select(-c(7:8))   
 CC_appt2  <- CC_appt2 %>% 
   filter(!is.na(`Effective user ID`)) %>% 
   select(-c(7:8))   
+CC_appt3  <- CC_appt3 %>% 
+  filter(!is.na(`Effective user ID`)) %>% 
+  select(-c(7:8))   
 
-CC_appt <- rbind(CC_appt1, CC_appt2)
+CC_appt <- rbind(CC_appt1, CC_appt2, CC_appt3)
 # 
 CC_appt <- rename(CC_appt, Appt.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 
@@ -64,10 +73,10 @@ CC_appt <- CC_appt %>%
 CC_appt$`Effective user ID` <- as.character(CC_appt$`Effective user ID`)
 
 # add and edit users
-CC_edit <- read_csv("initial_data/Spring2024/add-edit-users-newID-Apr30-2024.csv", skip = 6)
-# CC_edit2 <- read_csv("initial_data/Spring2024/add-edit-users-newID-Feb.csv", skip = 6)
+CC_edit <- read_csv("initial_data/Spring2024/add-edit-users-newID-Jan8-Mar30-2024.csv", skip = 6)
+CC_edit2 <- read_csv("initial_data/Spring2024/add-edit-users-newID-Apr1-Jun30-2024.csv", skip = 6)
 
-# CC_edit <- rbind(CC_edit, CC_edit2)
+CC_edit <- rbind(CC_edit, CC_edit2)
 
 CC_edit <- CC_edit %>% 
   filter(!is.na(`Effective user ID`)) %>% 
@@ -79,9 +88,9 @@ CC_edit <- CC_edit %>%
   distinct()
 
 # cases users
-CC_cases1 <- read_csv("initial_data/Spring2024/cat-cloud-cases.csv", skip = 7)
-# CC_cases2 <- read_csv("initial_data/Spring2024/cat-cloud-cases-Feb.csv", skip = 7)
-# CC_cases1 <- rbind(CC_cases1, CC_cases2)
+CC_cases1 <- read_csv("initial_data/Spring2024/cases-Jan8-Mar31-2024.csv", skip = 7)
+CC_cases2 <- read_csv("initial_data/Spring2024/cases-Apr1-Jun30-2024.csv", skip = 7)
+CC_cases1 <- rbind(CC_cases1, CC_cases2)
 
 CC_cases <- CC_cases1 %>%
   filter(!is.na(Date)) %>%
@@ -96,10 +105,16 @@ CC_cases <- CC_cases %>%
 
 CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
 
+# CC_cases <- CC_cases %>%
+#   select(`Effective user ID`, Cases.Sessions) %>% 
+#   distinct()
+# 
+# CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
+
 # events users
-CC_events1 <- read_csv("initial_data/Spring2024/cat-cloud-events.csv", skip = 6)
-# CC_cases2 <- read_csv("initial_data/Spring2024/cat-cloud-cases-Feb.csv", skip = 7)
-# CC_cases1 <- rbind(CC_cases1, CC_cases2)
+CC_events1 <- read_csv("initial_data/Spring2024/events-Jan8-Mar31-2024.csv", skip = 6)
+CC_events2 <- read_csv("initial_data/Spring2024/events-Apr1-Jun30-2024.csv", skip = 6)
+CC_events1 <- rbind(CC_events1, CC_events2)
 
 CC_events <- CC_events1 %>%
   filter(!is.na(`Stream name`)) %>%
@@ -109,11 +124,7 @@ CC_events <- CC_events1 %>%
 
 # CC_cases <- rename(CC_cases, `App-instance ID` = `Event name`)
 # CC_cases <- rename(CC_cases, Cases.Sessions = Sessions)
-CC_cases <- CC_cases %>%
-  select(`Effective user ID`, Cases.Sessions) %>% 
-  distinct()
 
-CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
 # goals users
 CC_goals1 <- read_csv("initial_data/Spring2024/goal-users-newID.csv", skip = 6)
 # CC_goals2 <- read_csv("initial_data/Spring2024/goal-users-newID-Feb.csv", skip = 6)
