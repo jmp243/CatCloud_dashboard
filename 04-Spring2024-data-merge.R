@@ -126,9 +126,9 @@ CC_events <- CC_events1 %>%
 # CC_cases <- rename(CC_cases, Cases.Sessions = Sessions)
 
 # goals users
-CC_goals1 <- read_csv("initial_data/Spring2024/goal-users-newID.csv", skip = 6)
-# CC_goals2 <- read_csv("initial_data/Spring2024/goal-users-newID-Feb.csv", skip = 6)
-# CC_goals <- rbind(CC_goals1, CC_goals2)
+CC_goals1 <- read_csv("initial_data/Spring2024/goal-users-newID-Jan8-Mar31-2024.csv", skip = 6)
+CC_goals2 <- read_csv("initial_data/Spring2024/goal-users-newID-Apr1-Jun30-2024.csv", skip = 6)
+CC_goals1 <- rbind(CC_goals1, CC_goals2)
 
 CC_goals <- CC_goals1 %>%
   filter(!is.na(`Effective user ID`)) %>%
@@ -221,7 +221,7 @@ Cat_SF <- Cat_SF %>%
 
 #### merge all current students based on emails to CatSF ####
 # student_enrollment_from_sf_oct <- read_csv("initial_data/Fall2023/all_student_enrollment_Oct2023.csv")
-student_enrollment_from_sf <- read_csv("initial_data/Spring2024/SF_student_enrollment_Feb5-2024.csv")
+student_enrollment_from_sf <- read_csv("initial_data/Spring2024/SF_student_enrollment_Jul1-2024.csv")
  
 # delete if email is blank
 # student_enrollment_from_sf_oct <- student_enrollment_from_sf_oct[!(is.na(student_enrollment_from_sf_oct$Email) | student_enrollment_from_sf_oct$Email==""), ]
@@ -270,7 +270,7 @@ unique(Cat_SF_enroll$Class_Standing_recode)
 #### headcounts with student info #### 
 ### from uaccess
 
-Headcount_students <- read_csv("initial_data/Spring2024/Spring2024_Headcount_Details.csv")
+Headcount_students <- read_csv("initial_data/Spring2024/Spring and Summer 2024 Headcount Details.csv")
 
 # View(Headcount_Details)
 unique(`Headcount_students`$`Academic Level`)
@@ -306,6 +306,8 @@ Headcount_students <- Headcount_students %>%
              "Graduate Coursework" = "Graduate Non-Degree Seeking",
              "Undergraduate Coursework" = "Undergrad Non-Degree Seeking",
              "Undergraduate Coursework" = "Undergraduate Certificate"))
+
+
 
 #### Change Last Login to date format ####
 #### subset the dates to post 8/15 ####
@@ -583,17 +585,32 @@ Cat_date_filter <- Cat_date_filter %>%
 # delete if email is blank
 Cat_date_filter2 <- Cat_date_filter[!(is.na(Cat_date_filter$Email) |Cat_date_filter$Email==""), ]
 
-write_named_csv(Cat_date_filter)
+#### add employee ID ####
+# Employees <- Employees %>% 
+#   select(NetID, `EDS Affiliations`, `EDS Primary Affiliation`, `Parent Organization`)
 
-####### data exploration to fix different counts
-vet_students <- Cat_date_filter %>% 
-  filter(Primary.College_recode == "College of Veterinary Medicine")
+#### add employee ID ####
+Employees <- Employees %>% 
+  select(NetID, `EDS Primary Affiliation`, `Parent Organization`) %>% 
+  filter(!is.na(NetID)) # important to do a nonNA filter otherwise the merge will max memory limit
 
-law_students <- Cat_date_filter %>% 
-  filter(Primary.College_recode == "Rogers College of Law")
 
-other_logins <- Cat_date_filter %>% 
-  select(-last_login2, -Date, -`Last Login`) %>% 
-  filter(Primary.College_recode == "Other") %>% 
-  distinct()
- 
+Cat_date_filter_long <- Cat_date_filter %>% left_join(Employees, relationship = "many-to-many") 
+
+table(Cat_date_filter_long$`EDS Primary Affiliation`)
+
+write_named_csv(Cat_date_filter_long)
+
+
+# ####### data exploration to fix different counts
+# vet_students <- Cat_date_filter %>% 
+#   filter(Primary.College_recode == "College of Veterinary Medicine")
+# 
+# law_students <- Cat_date_filter %>% 
+#   filter(Primary.College_recode == "Rogers College of Law")
+# 
+# other_logins <- Cat_date_filter %>% 
+#   select(-last_login2, -Date, -`Last Login`) %>% 
+#   filter(Primary.College_recode == "Other") %>% 
+#   distinct()
+#  
