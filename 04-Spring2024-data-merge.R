@@ -21,6 +21,7 @@ library(boxr)
 library(RCurl)
 library(forcats)
 
+
 #### create a Write csv function#### 
 write_named_csv <- function(x) 
   write_csv(x, file = paste0(
@@ -31,7 +32,7 @@ write_named_csv <- function(x)
 # merge all CC users
 CC_all1 <- read_csv("initial_data/Spring2024/CC_all_Jan8-Mar15-2024.csv", skip=6)
 CC_all2 <- read_csv("initial_data/Spring2024/CC_all_Mar16-May12-2024.csv", skip=6)
-CC_all3 <- read_csv("initial_data/Spring2024/CC_all_May13-Jun30-2024.csv", skip=6)
+CC_all3 <- read_csv("initial_data/Spring2024/CC_all_May13-Jul14-2024.csv", skip=6)
 
 CC_all1 <- CC_all1 %>%
   filter(!is.na(`Effective user ID`)) %>%
@@ -50,7 +51,7 @@ CC_all <- rbind(CC_all1, CC_all2, CC_all3)
 # appointment users
 CC_appt1 <- read_csv("initial_data/Spring2024/appt-users-newID-Jan8-Mar15-2024.csv", skip = 6)
 CC_appt2 <- read_csv("initial_data/Spring2024/appt-users-newID-Mar16-May12-2024.csv", skip = 6)
-CC_appt3 <- read_csv("initial_data/Spring2024/appt-users-newID-May13-Jun30-2024.csv", skip = 6)
+CC_appt3 <- read_csv("initial_data/Spring2024/appt-users-newID-May13-Jul14-2024.csv", skip = 6)
 
 CC_appt1  <- CC_appt1 %>% 
   filter(!is.na(`Effective user ID`)) %>% 
@@ -74,7 +75,7 @@ CC_appt$`Effective user ID` <- as.character(CC_appt$`Effective user ID`)
 
 # add and edit users
 CC_edit <- read_csv("initial_data/Spring2024/add-edit-users-newID-Jan8-Mar30-2024.csv", skip = 6)
-CC_edit2 <- read_csv("initial_data/Spring2024/add-edit-users-newID-Apr1-Jun30-2024.csv", skip = 6)
+CC_edit2 <- read_csv("initial_data/Spring2024/add-edit-users-newID-Apr1-Jul14-2024.csv", skip = 6)
 
 CC_edit <- rbind(CC_edit, CC_edit2)
 
@@ -89,7 +90,7 @@ CC_edit <- CC_edit %>%
 
 # cases users
 CC_cases1 <- read_csv("initial_data/Spring2024/cases-Jan8-Mar31-2024.csv", skip = 7)
-CC_cases2 <- read_csv("initial_data/Spring2024/cases-Apr1-Jun30-2024.csv", skip = 7)
+CC_cases2 <- read_csv("initial_data/Spring2024/cases-Apr1-Jul14-2024.csv", skip = 7)
 CC_cases1 <- rbind(CC_cases1, CC_cases2)
 
 CC_cases <- CC_cases1 %>%
@@ -113,7 +114,7 @@ CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
 
 # events users
 CC_events1 <- read_csv("initial_data/Spring2024/events-Jan8-Mar31-2024.csv", skip = 6)
-CC_events2 <- read_csv("initial_data/Spring2024/events-Apr1-Jun30-2024.csv", skip = 6)
+CC_events2 <- read_csv("initial_data/Spring2024/events-Apr1-Jul14-2024.csv", skip = 6)
 CC_events1 <- rbind(CC_events1, CC_events2)
 
 CC_events <- CC_events1 %>%
@@ -127,7 +128,7 @@ CC_events <- CC_events1 %>%
 
 # goals users
 CC_goals1 <- read_csv("initial_data/Spring2024/goal-users-newID-Jan8-Mar31-2024.csv", skip = 6)
-CC_goals2 <- read_csv("initial_data/Spring2024/goal-users-newID-Apr1-Jun30-2024.csv", skip = 6)
+CC_goals2 <- read_csv("initial_data/Spring2024/goal-users-newID-Apr1-Jul14-2024.csv", skip = 6)
 CC_goals1 <- rbind(CC_goals1, CC_goals2)
 
 CC_goals <- CC_goals1 %>%
@@ -585,32 +586,69 @@ Cat_date_filter <- Cat_date_filter %>%
 # delete if email is blank
 Cat_date_filter2 <- Cat_date_filter[!(is.na(Cat_date_filter$Email) |Cat_date_filter$Email==""), ]
 
-#### add employee ID ####
-# Employees <- Employees %>% 
-#   select(NetID, `EDS Affiliations`, `EDS Primary Affiliation`, `Parent Organization`)
+#### Based on Cat Date Filter2 ####
+Goals_users <- Cat_date_filter2 %>% 
+  filter(Goals == "G")
 
-#### add employee ID ####
-Employees <- Employees %>% 
-  select(NetID, `EDS Primary Affiliation`, `Parent Organization`) %>% 
-  filter(!is.na(NetID)) # important to do a nonNA filter otherwise the merge will max memory limit
+Edits_users <- Cat_date_filter2 %>% 
+  filter(Edits == "E")
+
+Cases_users <- Cat_date_filter2 %>% 
+  filter(Cases == "C")
+
+Events_users <- Cat_date_filter2 %>% 
+  filter(Events == "eV")
+
+Appts_users <- Cat_date_filter2 %>% 
+  filter(Appts == "A")
+
+# summarize by unique counts
+
+Count_App_ID <- Cat_date_filter2 %>% 
+  group_by(`App-instance ID`) %>% 
+  summarise(count = n())
 
 
-Cat_date_filter_long <- Cat_date_filter %>% left_join(Employees, relationship = "many-to-many") 
-
-table(Cat_date_filter_long$`EDS Primary Affiliation`)
-
-write_named_csv(Cat_date_filter_long)
+Count_Net_ID <- Cat_date_filter2 %>% 
+  group_by(NetID) %>% 
+  summarise(count = n())
 
 
-# ####### data exploration to fix different counts
-# vet_students <- Cat_date_filter %>% 
-#   filter(Primary.College_recode == "College of Veterinary Medicine")
-# 
-# law_students <- Cat_date_filter %>% 
-#   filter(Primary.College_recode == "Rogers College of Law")
-# 
-# other_logins <- Cat_date_filter %>% 
-#   select(-last_login2, -Date, -`Last Login`) %>% 
-#   filter(Primary.College_recode == "Other") %>% 
-#   distinct()
-#  
+ggplot(Count_Net_ID, aes(x = NetID, y = count)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Count of NetID", x = "NetID", y = "Count")
+
+#threshold
+threshold <- quantile(Count_Net_ID$count, 0.75)
+
+# Calculate the quartiles using ntile
+Count_Net_ID <- Count_Net_ID %>%
+  mutate(quartile = ntile(count, 4))
+
+Count_Net_ID <- Count_Net_ID %>% 
+  filter(!is.na(NetID))
+# Label the quartiles for clarity
+Count_Net_ID <- Count_Net_ID %>%
+  mutate(quartile = factor(quartile, levels = 1:4, labels = c("first Quartile", "second Quartile", "third Quartile", "fourth Quartile")))
+
+Count_Net_ID$NetID <- as.factor(Count_Net_ID$NetID)
+# # Plot the data using ggplot2, coloring by the quartile
+# ggplot(Count_Net_ID, aes(x = NetID, y = count, fill = quartile)) +
+#   geom_bar(stat = "identity") +
+#   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+#   labs(title = "Count of NetID by Quartile", x = "NetID", y = "Count") +
+#   scale_fill_brewer(palette = "Set3")
+
+# ggplot(Count_Net_ID, aes(x = quartile, y = NetID)) +
+ggplot(Count_Net_ID) +
+         # geom_bar(stat="identity")
+          geom_point(aes(x=quartile, y=NetID, 
+                 size=..count..), stat="bin")
+
+
+#
+ggplot(Count_Net_ID) +
+geom_bar(aes(x = quartile, fill = as.factor(NetID)), 
+         position = "dodge", stat = "count") 
+

@@ -29,9 +29,24 @@ Employees <- read_csv("initial_data/Spring2024/employee_cc/employee_from_SF.csv"
 
 #### add employee ID ####
 Employees <- Employees %>% 
-  select(NetID, `EDS Primary Affiliation`, `Parent Organization`)
+  select(NetID, `EDS Primary Affiliation`, `Parent Organization`) %>% 
+  filter(!is.na(NetID))
 
-Cat_date_filter_new <- Employees %>% left_join(Cat_date_filter, relationship = "many-to-many")
+
+Employees_emails <- Employees %>% 
+  select(`EDS Primary Affiliation`, `Parent Organization`, Email) %>% 
+  filter(!is.na(Email))
+
+Cat_date_filter_nonNA <- Cat_date_filter %>% 
+  filter(!is.na(Email))
+Cat_date_filter_emails <- Employees_emails %>% left_join(Cat_date_filter_nonNA, relationship = "many-to-many")
+
+Cat_date_filter_emails2 <- Cat_date_filter_nonNA %>% left_join(Employees_emails, relationship = "many-to-many") # failed
+
+table(Cat_date_filter_emails2$`EDS Primary Affiliation`)
+#### subset the workers ####
+table(Cat_date_filter_emails$`EDS Primary Affiliation`)
+
 
 #### create a Write csv function#### 
 write_named_csv <- function(x) 
@@ -39,3 +54,5 @@ write_named_csv <- function(x)
     "~/Documents/Trellis/CatCloud_dashboard/clean_data/clean_spring2024/",
     deparse(substitute(x)),".csv"))
 write_named_csv(Cat_date_filter)
+
+write_named_csv(Cat_date_filter_emails2)
