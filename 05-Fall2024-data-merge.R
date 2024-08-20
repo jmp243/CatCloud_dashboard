@@ -162,13 +162,6 @@ all_users_SF$last_login2 <- as.Date(mdy_hm(all_users_SF$`Last Login`))
 all_users_SF <- all_users_SF %>% 
   filter(last_login2 > "2023-08-08") 
 
-# SF users with Parent Org
-SF_parent_org <- read_csv("initial_data/Fall2024/from_SF/SF_parent_org_aug16_2024.csv")
-
-all_users_SF <- all_users_SF %>% 
-  left_join(SF_parent_org)
-
-# last login should be 
 
 #convert  SF 15 into 18
 binary <- c("00000","00001","00010","00011","00100","00101","00110","00111",
@@ -203,13 +196,57 @@ SFID_Convert <- function(sfid) {
 # SFID_Convert(sfid)
 all_users_SF <- all_users_SF %>% mutate(`SF_18_ID` = SFID_Convert(`User ID`)) %>% 
   rename(SF_15_ID = 'User ID')
+# subset by affiliation x and y
 
+
+# SF users with Parent Org
+SF_parent_org <- read_csv("initial_data/Fall2024/from_SF/SF_parent_org_aug16_2024.csv")
+
+# Perform full join
+all_users_SF_PO  <- full_join(all_users_SF, SF_parent_org, by = "Email")
+
+names(all_users_SF_PO)
+
+# for those with x
+all_users_SF_PO_x <- all_users_SF_PO %>% 
+  select(`First Name`, `Last Name`, Profile, `Last Login`, SF_15_ID, Email, `EDS Primary Affiliation.x`, `EDS Affiliations.x`, 
+         NetID.x, last_login2, SF_18_ID, `Parent Organization`, `Organization: Account Name`, `Job Function`, `Job Code`, `Job Family`) %>% 
+  rename(NetID = NetID.x) %>%
+  # rename(`Full Name` = `Full Name.x`) %>%
+  rename(`EDS Primary Affiliation` = `EDS Primary Affiliation.x`) %>% 
+  rename(`EDS Affiliations` = `EDS Affiliations.x`) 
+  # rename(`Organization: Account Name` = `Organization: Account Name.x`) %>% 
+  # rename(`Parent Organization` = `Parent Organization.x`) %>% 
+
+
+# rename with y
+all_users_SF_PO_y <- all_users_SF_PO %>% 
+  select(`First Name`, `Last Name`, Profile, `Last Login`, SF_15_ID, Email, `EDS Primary Affiliation.y`, `EDS Affiliations.y`, 
+         NetID.y, last_login2, SF_18_ID, `Parent Organization`, `Organization: Account Name`, `Job Function`, `Job Code`, `Job Family`) %>% 
+  rename(NetID = NetID.y) %>%
+  rename(`EDS Primary Affiliation` = `EDS Primary Affiliation.y`) %>% 
+  rename(`EDS Affiliations` = `EDS Affiliations.y`) 
+
+# combine x and y all users SF PO
+all_users_SF_PO_xy <- rbind(all_users_SF_PO_x, all_users_SF_PO_y) %>% 
+  distinct()
+
+# keep rows with the most information
+# all_users_SF_PO_xy <- all_users_SF_PO_xy %>%
+#   rowwise() %>%
+#   mutate(filled_columns = sum(!is.na(c_across())))
+
+# all_users_SF_PO_cleaned <- all_users_SF_PO_xy %>%
+#   group_by(SF_18_ID) %>%
+#   # filter(filled_columns == max(filled_columns)) %>%
+#   ungroup() %>%
+#   distinct(SF_18_ID, .keep_all = TRUE)
 # # SFID_Convert(sfid)
 # all_users_SF <- all_users_SF %>% mutate(`SF_18_ID` = SFID_Convert(`User ID`)) %>% 
 #   rename(SF_15_ID = 'User ID')
 
 #### subset sf_users by profile
-unique(all_users_SF$Profile)
+unique(all_users_SF_PO_xy$Profile)
 # go to salesforce for this data
 
 # # try running the analysis without this
@@ -228,12 +265,17 @@ CC_all_test <- CC_all %>%
     SF_15_ID= ifelse(nchar(`Effective user ID`) == 15, `Effective user ID`, NA)
   )
 CC_all_15_id <- CC_all_test %>%
-  select(SF_15_ID,SF_18_ID, Date, `Event count`, Sessions, Views) %>% 
+  select(SF_15_ID, Date, `Event count`, Sessions, Views) %>% 
   filter(!is.na(SF_15_ID)) 
 
 CC_all_18_id <- CC_all_test %>%
-  select(SF_18_ID, SF_15_ID, Date, `Event count`, Sessions, Views) %>% 
+  select(SF_18_ID, Date, `Event count`, Sessions, Views) %>% 
   filter(!is.na(SF_18_ID)) 
+
+CC_all_15_id <- left_join(CC_all_15_id, all_users_SF, by = c("SF_15_ID")) 
+CC_all_18_id <- left_join(CC_all_18_id, all_users_SF, by = c("SF_18_ID")) 
+
+CC_all_new <- rbind(CC_all_15_id, CC_all_18_id)
 
 CC_appt <- CC_appt %>% rename(SF_18_ID = `Effective user ID`)
 CC_case <- CC_cases %>% rename(SF_18_ID = `Effective user ID`)
@@ -241,30 +283,18 @@ CC_goal <- CC_goals %>% rename(SF_15_ID = `Effective user ID`)
 CC_edit <- CC_edit %>% rename(SF_15_ID = `Effective user ID`)
 CC_event <- CC_events %>% rename(SF_18_ID = `Effective user ID`)
 
-CC_all_15_id <- left_join(CC_all_15_id, all_users_SF) 
-CC_all_18_id <- left_join(CC_all_18_id, all_users_SF) 
 
-CC_all <- rbind(CC_all_15_id, CC_all_18_id)
-CC_appt <- left_join(CC_appt, all_users_SF)
-CC_case <- left_join(CC_case, all_users_SF)
-CC_goal <- left_join(CC_goal, all_users_SF)
-CC_edit <- left_join(CC_edit, all_users_SF)
-CC_event <- left_join(CC_event, all_users_SF)
+CC_appt <- left_join(CC_appt, all_users_SF_PO_xy)
+CC_case <- left_join(CC_case, all_users_SF_PO_xy)
+CC_goal <- left_join(CC_goal, all_users_SF_PO_xy)
+CC_edit <- left_join(CC_edit, all_users_SF_PO_xy)
+CC_event <- left_join(CC_event, all_users_SF_PO_xy)
 
 #### merge the 5 data frame with SF data ####
-Cat_SF <- CC_all %>% left_join(CC_appt) %>% 
+Cat_SF <- CC_all_new %>% left_join(CC_appt) %>% 
   left_join(CC_case) %>% left_join(CC_goal) %>% 
   left_join(CC_edit) %>% left_join(CC_event)
 
-Cat_SF <- Cat_SF %>% 
-  select(-`Namespace ID`, -Segment, -`Stream name`) %>% 
-  distinct()
-
-# Cat_SF$Date_adjust <- ymd(Cat_SF$Date)
-
-# Cat_SF <- Cat_SF %>% 
-#   select(-`Namespace ID`, -Segment, -`Stream name`) %>% 
-#   distinct()
 
 Cat_SF <- Cat_SF %>% 
   select(SF_15_ID, SF_18_ID, Sessions, Date, 
@@ -276,6 +306,7 @@ Cat_SF <- Cat_SF %>%
   distinct()
 
 
+
 #### merge all current students based on emails to CatSF ####
 student_enrollment_from_sf <- read_csv("initial_data/Fall2024/from_SF/student_enrollment_as_of_aug19_2024.csv")
 
@@ -283,7 +314,7 @@ student_enrollment_from_sf <- read_csv("initial_data/Fall2024/from_SF/student_en
 student_enrollment_from_sf <- student_enrollment_from_sf[!(is.na(student_enrollment_from_sf$Email) | student_enrollment_from_sf$Email==""), ]
 
 #### join catcloud to student enrollment data in SF ####
-Cat_SF_enroll <- left_join(Cat_SF, student_enrollment_from_sf, by = c("Email"="Email")) %>% 
+Cat_SF_enroll <- full_join(Cat_SF, student_enrollment_from_sf, by = c("Email"="Email")) %>% 
   distinct()# no need to add , by = c("Email"="Email")
 
 
@@ -593,7 +624,7 @@ employees_login <- Employees_amend %>%
          last_login2) %>% 
   filter(last_login2 > "2024-06-01") %>% 
   distinct()
-
+sys_date <- Sys.Date()
 write.csv(employees_login, "employees_who_logged_in_since_2024.csv")
 # unique emails only
 employees_login_SF <- Employees_amend %>% 
