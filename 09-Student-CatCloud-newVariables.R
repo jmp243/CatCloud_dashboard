@@ -1,6 +1,6 @@
 # CatCloud data with engagement data and funnels
 # student catcloud with new features
-# last run 09-03-2024
+# last run 09-17-2024
 
 #### load libraries ####
 library("tidyverse")
@@ -45,7 +45,7 @@ CC_all4 <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Apr1-Apr30-2024.
 CC_all5 <- read_csv("initial_data/cumulative_data/CC_all/CC_all_May1-May31-2024.csv", skip=6)
 CC_all6a <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Jun1-Jul31-2024.csv", skip=6) # new format
 CC_all6b <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Aug1-Aug31-2024.csv", skip=6) # new format
-CC_all6c <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Sept1-Sept10-2024.csv", skip=6) # new format
+CC_all6c <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Sept1-Sept16-2024.csv", skip=6) # new format
 
 CC_all <- rbind(CC_all1, CC_all2a, CC_all2b, CC_all3, CC_all4, CC_all5, CC_all6a, CC_all6b, CC_all6c)
 
@@ -71,7 +71,7 @@ CC_all <- CC_all %>%
 
 #### cases users ####
 CC_cases1 <- read_csv("initial_data/cumulative_data/cases/Cases_Nov1-Dec31-2023.csv", skip = 7)
-CC_cases2 <- read_csv("initial_data/cumulative_data/cases/Cases_Jan1-Sept10-2024.csv", skip = 7)
+CC_cases2 <- read_csv("initial_data/cumulative_data/cases/Cases_Jan1-Sept16-2024.csv", skip = 7)
 
 CC_cases <- rbind(CC_cases1, CC_cases2)
 
@@ -90,7 +90,7 @@ CC_appt1 <- read_csv("initial_data/cumulative_data/appt/appt_Nov1-Dec31-2023.csv
 CC_appt2 <- read_csv("initial_data/cumulative_data/appt/appt_Jan1-Feb29-2024.csv", skip = 6)
 CC_appt3a <- read_csv("initial_data/cumulative_data/appt/appt_Mar1-Apr30-2024.csv", skip = 6)
 CC_appt3b <- read_csv("initial_data/cumulative_data/appt/appt_May1-Jun30-2024.csv", skip = 6)
-CC_appt3c <- read_csv("initial_data/cumulative_data/appt/appt_July1-Sept10-2024.csv", skip = 6)
+CC_appt3c <- read_csv("initial_data/cumulative_data/appt/appt_July1-Sept16-2024.csv", skip = 6)
 
 CC_appt <- rbind(CC_appt1, CC_appt2, CC_appt3a, CC_appt3b, CC_appt3c)
 
@@ -105,7 +105,7 @@ CC_appt$`Effective user ID` <- as.character(CC_appt$`Effective user ID`)
 
 #### add edit users ####
 CC_edit1 <- read_csv("initial_data/cumulative_data/add_edit/add_edit_Nov1-Dec31-2023.csv", skip = 6)
-CC_edit2 <- read_csv("initial_data/cumulative_data/add_edit/add_edit_Jan1-Sept10-2024.csv", skip = 6)
+CC_edit2 <- read_csv("initial_data/cumulative_data/add_edit/add_edit_Jan1-Sept16-2024.csv", skip = 6)
 
 CC_edit <- rbind(CC_edit1, CC_edit2)
 CC_edit <- rename(CC_edit, Edit.Sessions = Sessions)
@@ -117,7 +117,7 @@ CC_edit <- CC_edit %>%
 
 #### goals users ####
 CC_goals1 <- read_csv("initial_data/cumulative_data/goals/goals_Nov1-Dec31-2023.csv", skip = 6)
-CC_goals2 <- read_csv("initial_data/cumulative_data/goals/goals_Jan1-Sept10-2024.csv", skip = 6)
+CC_goals2 <- read_csv("initial_data/cumulative_data/goals/goals_Jan1-Sept16-2024.csv", skip = 6)
 
 CC_goals <- rbind(CC_goals1, CC_goals2)
 CC_goals <- rename(CC_goals, Goal.Sessions = Sessions)
@@ -129,7 +129,7 @@ CC_goals <- CC_goals %>%
 
 #### events users ####
 CC_events1 <- read_csv("initial_data/cumulative_data/events/Events_Nov1-Dec31-2023.csv", skip = 6)
-CC_events2 <- read_csv("initial_data/cumulative_data/events/Events_Jan1-Sept10-2024.csv", skip = 6)
+CC_events2 <- read_csv("initial_data/cumulative_data/events/Events_Jan1-Sept16-2024.csv", skip = 6)
 
 CC_events <- rbind(CC_events1, CC_events2)
 
@@ -140,7 +140,7 @@ CC_events <- CC_events %>%
 
 #### funnel explorations ####
 # Get the list of files in the folder
-f <- list.files("./initial_data/Fall2024/funnel_exploration/", full.names = TRUE)
+f <- list.files("./initial_data/cumulative_data/funnel_exploration/", full.names = TRUE)
 
 # Remove the directory path and file extension to use the file names as dataframe names
 file_names <- tools::file_path_sans_ext(basename(f))
@@ -151,7 +151,7 @@ for (i in seq_along(f)) {
 }
 
 # home start 
-funnel_start_home <- funnel_start_home %>% 
+funnel_start_home <- funnel_start_homeAUG18_Sept16 %>% 
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(6))
 
@@ -159,7 +159,7 @@ funnel_start_home <- funnel_start_home %>%
 funnel_start_home <- rename(funnel_start_home, Home.Start.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 
 # home to student services 
-`student_serv_from_home` <- `student-serv-from-home` %>% 
+`student_serv_from_home` <- `ss-from-home-aug18-sept16` %>% 
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(6))
 
@@ -167,7 +167,7 @@ funnel_start_home <- rename(funnel_start_home, Home.Start.Sessions = Sessions) #
 student_serv_from_home <- rename(student_serv_from_home, SS.from.home.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 
 # home to classes 
-`classes_from_home` <- `classes-from-home` %>% 
+`classes_from_home` <- `classes_from_home_Aug18-Sept16` %>% 
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(6))
 
@@ -175,7 +175,7 @@ student_serv_from_home <- rename(student_serv_from_home, SS.from.home.Sessions =
 classes_from_home <- rename(classes_from_home, classes.from.home.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 
 # home to advising
-appt_from_home <- `appt-from-home` %>% 
+appt_from_home <- `appt-from-home-aug18-sept16` %>% 
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(6))
 
@@ -194,7 +194,7 @@ home_to_x <- home_to_x %>%
 
 
 # student services start
-student_services_start <- `student-services-start` %>% 
+student_services_start <- `ss-start-aug18-sept16` %>% 
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(6))
 
@@ -202,7 +202,7 @@ student_services_start <- `student-services-start` %>%
 student_services_start <- rename(student_services_start, student.services.start.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 
 # student services to classes 
-`classes_from_student_services` <- `classes-from-student-serv` %>% 
+`classes_from_student_services` <- `classes-from-student-serv-aug18-sept16` %>% 
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(6))
 
@@ -219,11 +219,11 @@ st_serv_to_classes <- st_serv_to_classes %>%
 # home_to_x and st_serve_to_classes works as places where we can merge
 
 #### read in SF csv ####
-all_users_SF <- read_csv("initial_data/cumulative_data/from_SF/Sept11_2024_community_users_profile.csv")
+all_users_SF <- read_csv("initial_data/cumulative_data/from_SF/Sept17_2024_Community_users.csv")
 
 # change last login to a readable date format
 all_users_SF$last_login2 <- as.Date(mdy_hm(all_users_SF$`Last Login`))
-# 
+
 # all_users_SF <- all_users_SF %>% 
 #   filter(last_login2 > "2023-08-08") 
 #### creating both types of SF ID ####
@@ -264,10 +264,10 @@ all_users_SF <- all_users_SF %>%
 
 #### merge all students based on emails to CatSF ####
 # OLD_users_SF <- read_csv("initial_data/cumulative_data/from_SF/old_student_enrollment.csv")
-student_enrollment_from_sf <- read_csv("initial_data/cumulative_data/from_SF/student_enrollment_as_of_Sept11_2024.csv")
+student_enrollment_from_sf <- read_csv("initial_data/cumulative_data/from_SF/student_enrollment_as_of_Sept17_2024.csv")
 
-# delete if email is blank
-student_enrollment_from_sf <- student_enrollment_from_sf[!(is.na(student_enrollment_from_sf$Email) | student_enrollment_from_sf$Email==""), ]
+# # delete if email is blank
+# student_enrollment_from_sf <- student_enrollment_from_sf[!(is.na(student_enrollment_from_sf$Email) | student_enrollment_from_sf$Email==""), ]
 
 # left join to all sf-users
 all_users_SF_enroll <- all_users_SF %>% 
@@ -382,20 +382,51 @@ Cat_SF <- Cat_SF %>%
 #     return(NA)  # If the date is outside the specified ranges
 #   }
 # }
+
+#### Define semester ranges ####
+# semester_ranges <- data.frame(
+#   semester = c("Fall 2023", "Spring 2024", "Fall 2024"),
+#   start_date = as.Date(c("2023-08-15", "2024-01-11", "2024-07-21")),
+#   end_date = as.Date(c("2024-01-10", "2024-07-20", "2024-12-15"))
+# )
+# 
+# # Function to determine semester
+# get_semester <- function(date) {
+#   if (is.na(date)) return(NA)
+#   
+#   semester <- semester_ranges %>%
+#     filter(date >= start_date & date <= end_date) %>%
+#     pull(semester)
+#   
+#   if (length(semester) == 0) return(NA)  # Return NA if no match found
+#   
+#   return(semester)
+# }
+# 
+# # Apply the function to the dataframe
+# Cat_SF <- Cat_SF %>%
+#   mutate(semester = sapply(last_login2, get_semester))
+# 
+# # Check for any NA values in the last_login2 column
+# invalid_dates <- Cat_SF[is.na(Cat_SF$last_login2), "last_login2"]
+# if (length(invalid_dates) > 0) {
+#   print("Invalid or unconvertible dates found:")
+#   print(invalid_dates)
+# }
 get_semester <- function(date_range) {
   # Check if date_range is NA or invalid
   if (is.na(date_range)) {
     return(NA)
   }
-  
+
   # Define the date ranges for Spring, Summer, and Fall 2024
   fall2023_start <- as.Date("2023-08-15")
   fall2023_end <- as.Date("2024-01-10")
   spring2024_start <- as.Date("2024-01-11")
-  spring2024_end <- as.Date("2024-08-20")
-  fall2024_start <- as.Date("2024-08-21")
+  spring2024_end <- as.Date("2024-05-15") # trying a unique date range to deal with summer enrollment
+  fall2024_start <- as.Date("2024-05-16")
   fall2024_end <- as.Date("2024-12-15")
-  
+
   # Assign semester based on the date ranges
   if (date_range >= fall2023_start & date_range <= fall2023_end) {
     return("Fall 2023")
@@ -408,6 +439,7 @@ get_semester <- function(date_range) {
   }
 }
 
+
 # Check for any NA values in the last_login2 column
 invalid_dates <- Cat_SF[is.na(Cat_SF$last_login2), "last_login2"]
 if (length(invalid_dates) > 0) {
@@ -416,7 +448,8 @@ if (length(invalid_dates) > 0) {
 }
 
 # Apply the function to create the semester column
-Cat_SF$semester <- sapply(Cat_SF$last_login2, get_semester)
+Cat_SF$semester_CC <- sapply(Cat_SF$last_login2, get_semester)
+
 
 
 #### join catcloud to student enrollment data in SF ####
@@ -446,7 +479,7 @@ Cat_SF_enroll$Class_Standing_recode <- factor(Cat_SF_enroll$Class_Standing_recod
 Headcount_Fall_Winter_2023 <- read_csv("initial_data/headcounts_data/Headcount_Fall_Winter_2023_YN_enroll.csv")
 Headcount_Spring2024 <- read_csv("initial_data/headcounts_data/Headcount_Spring2024.csv")
 Headcount_Summer2024 <- read_csv("initial_data/headcounts_data/Headcount_Summer2024.csv")
-Headcount_Fall2024 <- read_csv("initial_data/headcounts_data/Headcount_Fall2024.csv")
+Headcount_Fall2024 <- read_csv("initial_data/headcounts_data/Headcount_Fall2024_Sept17.csv")
 Headcount_students <- rbind(Headcount_Fall_Winter_2023, Headcount_Spring2024, Headcount_Summer2024, Headcount_Fall2024) %>% 
   unique()
 
@@ -577,7 +610,7 @@ Headcount_students %>%
   summarise(unique_count = n_distinct(`UA Email Address`)) # almost 90000
 
 Headcount_students %>%
-  summarise(unique_count = n_distinct(`Student ID`)) # almost 91257
+  summarise(unique_count = n_distinct(`Student ID`)) # almost 91531
 # defining cat date filter
 Cat_date_filter <- Cat_SF_enroll %>%
   filter(last_login2 > "2023-10-31 06:25:00 GMT")
@@ -596,129 +629,294 @@ Cat_date_filter <- Cat_date_filter %>%
   left_join(home_to_x) %>% 
   left_join(st_serv_to_classes)
 
-# Reshape the data to long format
-home_to_x_SF_long <- home_to_x_SF  %>%
-  select(SF_18_ID, Home.Start.Sessions, classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions) %>% 
-  pivot_longer(
-    cols = c(classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions),
-    names_to = "Target",
-    values_to = "Value"
-  )
-
-# Add the Source and Path Order columns
-home_to_x_SF_long <- home_to_x_SF  %>%
-     select(SF_18_ID, Home.Start.Sessions, classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions, 
-            student.services.start.Sessions, classes.from.student.services.Sessions) %>% 
-     pivot_longer(
-         cols = c(classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions),
-         names_to = "Target",
-         values_to = "Value"
-       )
-
-home_to_x_SF <- home_to_x_SF %>% 
-  full_join(st_serv_to_classes)
-
-home_to_x_SF_long <- home_to_x_SF %>%
-  mutate(Source = "Home.Start.Sessions", "Home.Start.Sessions","Home.Start.Sessions", Stu) %>%   # Source is always Home
-  mutate(Path_Order = 0)        # Initial Path Order for the first set
-# Create the duplicate rows with Path Order 1
-home_to_x_SF_long_duplicated <- home_to_x_SF_long %>%
-  mutate(Path_Order = 1)
-
-# Combine the original and duplicated data
-home_to_x_SF_long_final_data <- bind_rows(home_to_x_SF_long, home_to_x_SF_long_duplicated )
-
-home_to_x_SF_long_final_data <- home_to_x_SF_long_final_data %>% 
-  rename(`App-instance ID` = SF_18_ID)
-
-write_named_csv(home_to_x_SF_long_final_data)
+# # Reshape the data to long format
+# home_to_x_SF_long <- home_to_x_SF  %>%
+#   select(SF_18_ID, Home.Start.Sessions, classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions) %>% 
+#   pivot_longer(
+#     cols = c(classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions),
+#     names_to = "Target",
+#     values_to = "Value"
+#   )
+# 
+# # Add the Source and Path Order columns
+# home_to_x_SF_long <- home_to_x_SF  %>%
+#      select(SF_18_ID, Home.Start.Sessions, classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions, 
+#             student.services.start.Sessions, classes.from.student.services.Sessions) %>% 
+#      pivot_longer(
+#          cols = c(classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions),
+#          names_to = "Target",
+#          values_to = "Value"
+#        )
+# 
+# home_to_x_SF <- home_to_x_SF %>% 
+#   full_join(st_serv_to_classes)
+# 
+# home_to_x_SF_long <- home_to_x_SF %>%
+#   mutate(Source = "Home.Start.Sessions", "Home.Start.Sessions","Home.Start.Sessions", Stu) %>%   # Source is always Home
+#   mutate(Path_Order = 0)        # Initial Path Order for the first set
+# # Create the duplicate rows with Path Order 1
+# home_to_x_SF_long_duplicated <- home_to_x_SF_long %>%
+#   mutate(Path_Order = 1)
+# 
+# # Combine the original and duplicated data
+# home_to_x_SF_long_final_data <- bind_rows(home_to_x_SF_long, home_to_x_SF_long_duplicated )
+# 
+# home_to_x_SF_long_final_data <- home_to_x_SF_long_final_data %>% 
+#   rename(`App-instance ID` = SF_18_ID)
+# 
+# write_named_csv(home_to_x_SF_long_final_data)
 
 
 #### donut chart ####
 # Pivot the data
-donut_data <- Cat_date_filter %>% 
-  select(SF_18_ID, last_login2, Home.Start.Sessions, classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions) %>% 
-  pivot_longer(cols = c(classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions),
-                   names_to = "Destination",
-                   values_to = "Value")
+donut_data <- home_to_x %>% 
+  rename(`App-instance ID` = SF_18_ID) %>% 
+  select(-c(`Stream name`, `Namespace ID`, `Event count`)) %>% 
+  pivot_longer(cols = -c(Home.Start.Sessions, `App-instance ID`), 
+               names_to = "destination_page", 
+               values_to = "count")
+
+# Calculate percentages
+donut_data  <- donut_data  %>%
+  filter(!(is.na(count))) %>% 
+  mutate(percentage = count / sum(count) * 100)
+
+# Add a column for sorting (optional, but useful for Tableau)
+donut_data  <- donut_data  %>%
+  arrange(desc(count)) %>%
+  mutate(sort_order = row_number())
+
+# Write the processed data to a CSV file
+write_named_csv(donut_data)
+
+# donut_data <- Cat_date_filter %>% 
+#   select(SF_18_ID, last_login2, Home.Start.Sessions, classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions) %>% 
+#   pivot_longer(cols = c(classes.from.home.Sessions, SS.from.home.Sessions, appt.from.home.Sessions),
+#                    names_to = "Destination",
+#                    values_to = "Value")
+
 
 # donut_data_final <- donut_data %>% 
 #   rename(`App-instance ID` = SF_18_ID) 
+# 
+# write_named_csv(donut_data)
 
-write_named_csv(donut_data)
+#### rename effective user id ####
+# remove non-students 
+Cat_date_filter_student <- Cat_date_filter %>% 
+  select(SF_15_ID, SF_18_ID, `Student Enrollment Key`, Sessions, Date, Appt.Sessions, Edit.Sessions, Goal.Sessions, Cases.Sessions, Events.Sessions, 
+         User_engagement_in_seconds, Time_elapsed_in_seconds, Avg_session_in_seconds, Email, `Full Name`, Cases.Date,
+         `First Name`, `Last Name`, `Last Login`, last_login2, Appt, Case, Event, Goal, Edit, `Student Enrollment Name`,
+         semester_CC, Campus, Career, NetID, `Class Standing`, `Primary College`, Emplid, Class_Standing_recode,
+         Primary.College_recode, Campus.recode1, Campus.recode, Goals, Appts, Cases, Edits, Events, Total) %>%
+  rename(`App-instance ID` = SF_18_ID) %>% 
+  rename(`Student_ID_CC` = Emplid) %>% 
+  filter(!(is.na(`Student Enrollment Name`)))
 
-# primary college table
-Academic_program_table_Spring2024 <- Headcount_students %>% 
-  select(semester_headcounts, Primary_College_recode, `Student ID`) %>% 
-  filter(semester_headcounts == "Spring 2024") %>% 
+#### primary college table ####
+Academic_program_table_Fall2023 <- Headcount_students %>% 
+  filter(semester_headcounts == "Fall 2023") %>% 
   count(Primary_College_recode, name = "All_students_program") %>% 
-  left_join(Cat_SF_enroll %>%   
-              filter(semester == "Spring 2024") %>%
-              select(Email, Primary.College_recode) %>% 
-              distinct() %>% 
-              rename(Primary_College_recode = Primary.College_recode)   %>% 
-              count(Primary_College_recode, name = "N_users_program")) %>% 
-  mutate(proportion = N_users_program/All_students_program)
-
-Academic_program_table_Summer2024 <- Headcount_students %>% 
-  filter(Term == "Summer 2024") %>% 
-  count(Primary_College_recode, name = "All_students_program") %>% 
-  left_join(Cat_SF_enroll %>%   
-              filter(semester == "Summer 2024") %>%
-              select(SF_18_ID, Primary.College_recode) %>% 
+  left_join(Cat_date_filter_student %>%   
+              filter(semester_CC == "Fall 2023") %>%
+              select(`App-instance ID`, Primary.College_recode) %>% 
               distinct() %>% 
               rename(Primary_College_recode = Primary.College_recode)    %>% 
               count(Primary_College_recode, name = "N_users_program")) %>% 
   mutate(proportion = N_users_program/All_students_program)
+
+Academic_program_table_Fall2023$semester <- "Fall 2023"
+write_named_csv(Academic_program_table_Fall2023)
+
+
+Academic_program_table_Spring2024 <- Headcount_students %>% 
+  # select(semester_headcounts, Primary_College_recode, `Student ID`) %>% 
+  filter(semester_headcounts == "Spring 2024") %>% 
+  count(Primary_College_recode, name = "All_students_program") %>% 
+  left_join(Cat_date_filter_student %>%   
+              filter(semester_CC == "Spring 2024") %>%
+              select(`App-instance ID`, Primary.College_recode) %>% 
+              distinct() %>% 
+              rename(Primary_College_recode = Primary.College_recode)   %>% 
+              count(Primary_College_recode, name = "N_users_program")) %>% 
+  mutate(proportion = N_users_program/All_students_program)
+Academic_program_table_Spring2024$semester <- "Spring 2024"
+
+write_named_csv(Academic_program_table_Spring2024)
+
+Academic_program_table_Fall2024 <- Headcount_students %>% 
+  filter(semester_headcounts == "Fall 2024") %>% 
+  count(Primary_College_recode, name = "All_students_program") %>% 
+  left_join(Cat_date_filter_student %>%   
+              filter(semester_CC == "Fall 2024") %>%
+              select(`App-instance ID`, Primary.College_recode) %>% 
+              distinct() %>% 
+              rename(Primary_College_recode = Primary.College_recode)    %>% 
+              count(Primary_College_recode, name = "N_users_program")) %>% 
+  mutate(proportion = N_users_program/All_students_program)
+Academic_program_table_Fall2024$semester <- "Fall 2024"
+
+write_named_csv(Academic_program_table_Fall2024)
+
+Academic_program_table <- rbind(Academic_program_table_Fall2023, Academic_program_table_Spring2024, Academic_program_table_Fall2024)
+
+write_named_csv(Academic_program_table)
 #### campus tables ####
-Campus_table <- Headcount_Fall2024 %>%
+Campus_table_fall2023 <- Headcount_students %>%
+  # filter(semester_headcounts == "Fall 2023") %>% 
+  filter(Term == "Fall 2023") %>% 
   count(Campus_recode, name = "All_students_campus")%>% 
-  left_join(Cat_date_filter %>%
-              select(SF_18_ID, Campus.recode) %>%
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Fall 2023") %>%
+              select(`App-instance ID`, Campus.recode) %>%
               distinct() %>%
               rename(Campus_recode = Campus.recode)    %>%
               count(Campus_recode, name = "N_users_campus")) %>%
   mutate(proportion = N_users_campus/All_students_campus)
 
-write_named_csv(Campus_table)
-
-
-Campus_table1_Spring2024 <- Headcount_students %>%
-  # select(semester_headcounts, Primary_College_recode, Campus_recode1, `Student ID`) %>% 
-  filter(Term == "Spring 2024") %>% 
-  count(Campus_recode1, name = "All_students_campus")%>% 
-  left_join(Cat_date_filter %>%
-              filter(semester == "Spring 2024") %>% 
-              select(Email, Campus.recode1) %>%
+Campus_table1_Fall2023 <- Headcount_students %>%
+  # select(semester_headcounts, Primary_College_recode, Campus_recode1, `Student ID`) %>%
+  filter(Term == "Fall 2023") %>%
+  count(Campus_recode1, name = "All_students_campus")%>%
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Fall 2023") %>%
+              select(`App-instance ID`, Campus.recode1) %>%
               distinct() %>%
               rename(Campus_recode1 = Campus.recode1)    %>%
               count(Campus_recode1, name = "N_users_campus")) %>%
   mutate(proportion1 = N_users_campus/All_students_campus)
 
-write_named_csv(Campus_table1)# 
+Campus_table1_Fall2023$semester <- "Fall 2023"
 
+write_named_csv(Campus_table1)#
+write_named_csv(Campus_table1_Fall2023)
+
+Campus_table_Spring2024 <- Headcount_students %>%
+  filter(semester_headcounts == "Spring 2024") %>% 
+  #filter(Term == "Spring 2024") %>% 
+  count(Campus_recode, name = "All_students_campus")%>% 
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Spring 2024") %>%
+              select(`App-instance ID`, Campus.recode) %>%
+              distinct() %>%
+              rename(Campus_recode = Campus.recode)    %>%
+              count(Campus_recode, name = "N_users_campus")) %>%
+  mutate(proportion = N_users_campus/All_students_campus)
+
+write_named_csv(Campus_table_Spring2024)
+
+Campus_table1_Spring2024 <- Headcount_students %>%
+  # select(semester_headcounts, Primary_College_recode, Campus_recode1, `Student ID`) %>%
+  filter(Term == "Spring 2024") %>%
+  count(Campus_recode1, name = "All_students_campus")%>%
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Spring 2024") %>%
+              select(`App-instance ID`, Campus.recode1) %>%
+              distinct() %>%
+              rename(Campus_recode1 = Campus.recode1)    %>%
+              count(Campus_recode1, name = "N_users_campus")) %>%
+  mutate(proportion1 = N_users_campus/All_students_campus)
+
+Campus_table1_Spring2024$semester <- "Spring 2024"
+write_named_csv(Campus_table1_Spring2024)#
+
+# Campus_table_fall2024 <- Headcount_students %>%
+#   filter(Term == "Fall 2024") %>% 
+#   count(Campus_recode, name = "All_students_campus")%>% 
+#   left_join(Cat_date_filter_student %>%
+#               filter(semester_CC == "Fall 2024") %>%
+#               select(`App-instance ID`, Campus.recode) %>%
+#               distinct() %>%
+#               rename(Campus.recode = Campus.recode)    %>%
+#               count(Campus_recode, name = "N_users_campus")) %>%
+#   mutate(proportion = N_users_campus/All_students_campus)
+# 
+# write_named_csv(Campus_table_fall2024)
+
+# 
+Campus_table1_Fall2024 <- Headcount_students %>%
+  # select(semester_headcounts, Primary_College_recode, Campus_recode1, `Student ID`) %>%
+  filter(Term == "Fall 2024") %>%
+  count(Campus_recode1, name = "All_students_campus")%>%
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Fall 2024") %>%
+              select(`App-instance ID`, Campus.recode1) %>%
+              distinct() %>%
+              rename(Campus_recode1 = Campus.recode1)    %>%
+              count(Campus_recode1, name = "N_users_campus")) %>%
+  mutate(proportion1 = N_users_campus/All_students_campus)
+Campus_table1_Fall2024$semester <- "Fall 2024"
+write_named_csv(Campus_table1_Fall2024)#
+
+Campus_table1 <- rbind(Campus_table1_Fall2023, Campus_table1_Spring2024, Campus_table1_Fall2024)
+write_named_csv(Campus_table1)
 #### detailed class tables ####
-detailed_class_standing_table <-  Headcount_Fall2024 %>%
+# detailed_class_standing_table <-  Headcount_Fall2024 %>%
+#   count(Class_standing_recode, name = "All_students_class_standing")%>% 
+#   left_join(Cat_date_filter %>%
+#               select(SF_18_ID, Class_Standing_recode) %>%
+#               distinct() %>%
+#               rename(Class_standing_recode = Class_Standing_recode) %>% 
+#               count(Class_standing_recode, name = "N_users")) %>%
+#   mutate(proportion = N_users/All_students_class_standing)
+# 
+# write_named_csv(detailed_class_standing_table)
+
+detailed_class_standing_table_Fall2023 <-  Headcount_students %>%
+  filter(Term == "Fall 2023") %>% 
   count(Class_standing_recode, name = "All_students_class_standing")%>% 
-  left_join(Cat_date_filter %>%
-              select(SF_18_ID, Class_Standing_recode) %>%
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Fall 2023") %>% 
+              select(`App-instance ID`, Class_Standing_recode) %>%
               distinct() %>%
               rename(Class_standing_recode = Class_Standing_recode) %>% 
               count(Class_standing_recode, name = "N_users")) %>%
   mutate(proportion = N_users/All_students_class_standing)
+detailed_class_standing_table_Fall2023$semester <- "Fall 2023"
+write_named_csv(detailed_class_standing_table_Fall2023)
+
+
+detailed_class_standing_table_Spring2024 <-  Headcount_students %>%
+  filter(Term == "Spring 2024") %>% 
+  count(Class_standing_recode, name = "All_students_class_standing")%>% 
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Spring 2024") %>% 
+              select(`App-instance ID`, Class_Standing_recode) %>%
+              distinct() %>%
+              rename(Class_standing_recode = Class_Standing_recode) %>% 
+              count(Class_standing_recode, name = "N_users")) %>%
+  mutate(proportion = N_users/All_students_class_standing)
+detailed_class_standing_table_Spring2024$semester <- "Spring 2024"
+
+write_named_csv(detailed_class_standing_table_Spring2024)
+
+detailed_class_standing_table_Fall2024 <-  Headcount_students %>%
+  filter(Term == "Fall 2024") %>% 
+  count(Class_standing_recode, name = "All_students_class_standing")%>% 
+  left_join(Cat_date_filter_student %>%
+              filter(semester_CC == "Fall 2024") %>% 
+              select(`App-instance ID`, Class_Standing_recode) %>%
+              distinct() %>%
+              rename(Class_standing_recode = Class_Standing_recode) %>% 
+              count(Class_standing_recode, name = "N_users")) %>%
+  mutate(proportion = N_users/All_students_class_standing)
+detailed_class_standing_table_Fall2024$semester <- "Fall 2024"
+
+write_named_csv(detailed_class_standing_table_Fall2024)
+
+detailed_class_standing_table <- rbind(detailed_class_standing_table_Fall2023, detailed_class_standing_table_Spring2024, detailed_class_standing_table_Fall2024)
 
 write_named_csv(detailed_class_standing_table)
 
-#### rename effective user id ####
-Cat_date_filter_student <- Cat_date_filter %>% 
-  rename(`App-instance ID` = SF_18_ID) %>% 
-  filter(!(is.na(`Student Enrollment Name`))) # remove non-students
-
-Cat_date_filter %>%
+# quick checks
+Cat_date_filter_student %>%
   summarise(unique_count = n_distinct(`Student Enrollment Name`)) # almost 59000
 
-Cat_date_filter %>%
-  summarise(unique_count = n_distinct(`Email`)) # almost 52000
+Cat_date_filter_student %>%
+  summarise(unique_count = n_distinct(`Email`)) # almost 52000 but 43906 in -student
+
+Cat_date_filter_student %>%
+  summarise(unique_count = n_distinct(Student_ID_CC)) # almost 52000 but 43906 in -student
 # Anti join to find people in list1 but not in list2
 unmatched_list <- anti_join(Cat_date_filter_student, Headcount_students, by = c("Email" = "UA Email Address"))
 
@@ -735,8 +933,25 @@ Headcount_students %>%
   group_by(semester_headcounts) %>% 
   summarise(unique_count = n_distinct(`Student ID`))
 
+Headcount_students %>% 
+  group_by(Campus_recode1) %>% 
+  summarise(unique_count = n_distinct(`Student ID`))
+
+Headcount_students %>% 
+  group_by(Class_standing_recode) %>% 
+  summarise(unique_count = n_distinct(`Student ID`))
+
+Cat_date_filter %>% 
+  group_by(Class_Standing_recode) %>% 
+  summarise(unique_count = n_distinct(`Email`))
+
+Headcount_students %>% 
+  filter(semester_headcounts == "Spring 2024") %>% 
+  group_by(Campus_recode) %>% 
+  summarise(unique_count = n_distinct(`Student ID`))
+
 Cat_date_filter_student %>% 
-  group_by(semester) %>% 
+  group_by(semester_CC) %>% 
   summarise(unique_count = n_distinct(`Email`))
 
 #### write Cat date filter to file ####
@@ -745,3 +960,14 @@ write_named_csv(Cat_date_filter_student)
 
 write_named_csv(Headcount_students)
 
+#### tableau help ####
+
+CC_students <- Cat_date_filter_student %>% 
+  select(-c(`Full Name`, `First Name`, `Last Name`, NetID, Email))
+
+headcount <- Headcount_students %>% 
+  select(-c(`UA Email Address`, `Preferred Name`, `First Name`, `Last Name`, `Preferred First Name`, `Preferred Last Name`
+            ))
+
+write_named_csv(CC_students)
+write_named_csv(headcount)
