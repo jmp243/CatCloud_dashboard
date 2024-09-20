@@ -23,95 +23,77 @@ library(forcats)
 #### create a Write csv function#### 
 write_named_csv <- function(x) 
   write_csv(x, file = paste0(
-    "~/Documents/Trellis/CatCloud_dashboard/clean_data/clean_fall2024/",
+    "~/Documents/Trellis/CatCloud_dashboard/clean_data/clean_fall2024/Employee/",
     deparse(substitute(x)),".csv"))
 
 #### read in excel file ####
 #### merge all CC users ####
-CC_all1 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Jan-Feb29-2024.csv", skip=6)
-CC_all2a <- read_csv("initial_data/Fall2024/CC_all/CC_all_Mar-2024.csv", skip=6)
-CC_all2b <- read_csv("initial_data/Fall2024/CC_all/CC_all_Apr-2024.csv", skip=6)
-CC_all3 <- read_csv("initial_data/Fall2024/CC_all/CC_all_May-2024.csv", skip=6)
-CC_all4 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Jun-Jul-2024.csv", skip=6)
-CC_all5 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Aug25-2024.csv", skip=6)
+CC_all1 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Nov1-Nov30-2023.csv", skip=6)
+CC_all2a <- read_csv("initial_data/Fall2024/CC_all/CC_all_Dec1-Dec31-2023.csv", skip=6)
+CC_all2b <- read_csv("initial_data/Fall2024/CC_all/CC_all_Jan1-Feb29-2024.csv", skip=6)
+CC_all3 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Mar1-Mar31-2024.csv", skip=6)
+CC_all4 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Apr1-Apr30-2024.csv", skip=6)
+CC_all5 <- read_csv("initial_data/Fall2024/CC_all/CC_all_May1-May31-2024.csv", skip=6)
+CC_all6a <- read_csv("initial_data/Fall2024/CC_all/CC_all_Jun1-Jul31-2024.csv", skip=6) # new format
+CC_all6b <- read_csv("initial_data/Fall2024/CC_all/CC_all_Aug1-Aug31-2024.csv", skip=6) # new format
+CC_all6c <- read_csv("initial_data/Fall2024/CC_all/CC_all_Sept1-Sept16-2024.csv", skip=6) # new format
 
-CC_all1 <- CC_all1 %>%
+CC_all <- rbind(CC_all1, CC_all2a, CC_all2b, CC_all3, CC_all4, CC_all5, CC_all6a, CC_all6b, CC_all6c)
+
+# CC_all $CC_Date <- as.Date(as.character(CC_all$Date), format='%Y%m%d')
+CC_all <- CC_all %>%
   filter(!is.na(`Effective user ID`)) %>%
-  select(-c(9:10)) 
-
-CC_all2a <- CC_all2a %>%
-  filter(!is.na(`Effective user ID`)) %>%
-  select(-c(9:10))
-
-CC_all2b <- CC_all2b %>%
-  filter(!is.na(`Effective user ID`)) %>%
-  select(-c(9:10))
-
-CC_all3 <- CC_all3 %>%
-  filter(!is.na(`Effective user ID`)) %>%
-  select(-c(9:10)) 
-
-CC_all4 <- CC_all4 %>%
-  filter(!is.na(`Effective user ID`)) %>%
-  select(-c(9:10)) 
-
-CC_all5 <- CC_all5 %>%
-  filter(!is.na(`Effective user ID`)) %>%
-  select(-c(9:10)) 
-
-CC_all <- rbind(CC_all1, CC_all2a, CC_all2b, CC_all3, CC_all4, CC_all5)
+  select(`Effective user ID`, Date, `Event count`, Sessions, Views, `Engagement rate`, 
+         `User engagement`, `Elapsed time from last page request`, `Average session duration`) 
+# CC_all <- rbind(CC_all1, CC_all2a, CC_all2b, CC_all3, CC_all4, CC_all5)
 
 #### cases users ####
-CC_cases1 <- read_csv("initial_data/Fall2024/cases/cases_Jan_Aug25_2024.csv", skip = 7)
-# CC_cases2 <- read_csv("initial_data/Fall2024/cases-Apr1-Aug13-2024.csv", skip = 7)
+# CC_cases1 <- read_csv("initial_data/Fall2024/cases/cases_Jan_Sept2_2024.csv", skip = 7)
+CC_cases1 <- read_csv("initial_data/Fall2024/cases/Cases_Jan1-Sept16-2024.csv", skip = 7)
 
-CC_cases1 <- CC_cases1 %>%
-  filter(!is.na(Date)) %>%
+CC_cases <- CC_cases1 %>%
+  # filter(!is.na(Date)) %>%
   # filter(Totals != 'Event count') %>%
   select(`Effective user ID`, `Event count`, Sessions)
-
-CC_cases <- rename(CC_cases1, Cases.Sessions = Sessions)
-
+# 
+CC_cases <- rename(CC_cases, Cases.Sessions = Sessions) 
+# CC_cases <- rename(CC_cases, Cases.Date = Date) 
 CC_cases$Cases.Sessions <- as.numeric(CC_cases$Cases.Sessions)
+# CC_cases$Cases.Date <- as.Date(as.character(CC_cases$Cases.Date), format='%Y%m%d')
+
 #### appointment users ####
-CC_appt1 <- read_csv("initial_data/Fall2024/appt/appt-Jan-Mar15-2024.csv", skip = 6)
-CC_appt2 <- read_csv("initial_data/Fall2024/appt/appt-users-newID-Mar16-May12-2024.csv", skip = 6)
-CC_appt3 <- read_csv("initial_data/Fall2024/appt/Appt-May13-Aug25-2024.csv", skip = 6)
 
-CC_appt1  <- CC_appt1 %>% 
-  filter(!is.na(`Effective user ID`)) %>% 
-  select(-c(7:8))   
-CC_appt2  <- CC_appt2 %>% 
-  filter(!is.na(`Effective user ID`)) %>% 
-  select(-c(7:8))   
-CC_appt3  <- CC_appt3 %>% 
-  filter(!is.na(`Effective user ID`)) %>% 
-  select(-c(7:8))   
+CC_appt1 <- read_csv("initial_data/Fall2024/appt/appt_Jan1-Feb29-2024.csv", skip = 6)
+CC_appt2 <- read_csv("initial_data/Fall2024/appt/appt_Mar1-Apr30-2024.csv", skip = 6)
+CC_appt3a <- read_csv("initial_data/Fall2024/appt/appt_May1-Jun30-2024.csv", skip = 6)
+CC_appt3b <- read_csv("initial_data/Fall2024/appt/appt_July1-Sept16-2024.csv", skip = 6)
 
-CC_appt <- rbind(CC_appt1, CC_appt2, CC_appt3)
+CC_appt <- rbind(CC_appt1, CC_appt2, CC_appt3a, CC_appt3b)
+
+CC_appt  <- CC_appt %>% 
+  filter(!is.na(`Effective user ID`)) %>% 
+  select(`Effective user ID`, Sessions)   
+
+
 # rename variables 
 CC_appt <- rename(CC_appt, Appt.Sessions = Sessions) #, Namespace.ID = `Namespace ID`, Stream.name = `Stream name`, App.instance.ID = `App-instance ID`
 
 CC_appt <- CC_appt %>%
   select(`Effective user ID`, Appt.Sessions) %>% 
   distinct() 
-# change numbers into characters 
+
 CC_appt$`Effective user ID` <- as.character(CC_appt$`Effective user ID`)
 
-
 #### events users ####
-CC_events1 <- read_csv("initial_data/Fall2024/events/events-Jan-Aug25_2024.csv", skip = 6)
-# CC_events2 <- read_csv("initial_data/Fall2024/events-Apr1-Aug13-2024.csv", skip = 6)
-# CC_events1 <- rbind(CC_events1, CC_events2)
+CC_events1 <- read_csv("initial_data/Fall2024/events/Events_Jan1-Sept16-2024.csv", skip = 6)
 
 CC_events <- CC_events1 %>%
   filter(!is.na(`Stream name`)) %>%
-  # filter(Totals != 'Event count') %>%
   select(`Effective user ID`, `Total users`) %>% 
   rename(Events.Sessions = `Total users`)
 
 #### import news data ####
-News_users <- read_csv("initial_data/Fall2024/news/News_Jan-Aug27_2024.csv", skip=6)
+News_users <- read_csv("initial_data/Fall2024/news/News_Jan-Sept16_2024.csv", skip=6)
 CC_news <- News_users %>%
   filter(!is.na(`Effective user ID`)) %>%
   select(-c(5))
@@ -123,7 +105,7 @@ CC_news <- CC_news %>%
   rename(News.Sessions = `Total users`)
 
 #### read in SF csv ####
-all_users_SF <- read_csv("initial_data/Fall2024/from_SF/Aug25_2024_community_users_profile.csv")
+all_users_SF <- read_csv("initial_data/Fall2024/from_SF/Sept9_2024_community_users_profile.csv")
 
 # change last login to a readable date format
 all_users_SF$last_login2 <- as.Date(mdy_hm(all_users_SF$`Last Login`))
@@ -133,24 +115,27 @@ all_users_SF <- all_users_SF %>%
   filter(last_login2 > "2023-08-08") 
 
 # SF users with Parent Org
-SF_parent_org <- read_csv("initial_data/Fall2024/from_SF/SF_Parent_organization_Aug26_2024.csv")
+SF_parent_org_orig <- read_csv("initial_data/Fall2024/from_SF/Active_univ_affiliations_9_20_2024.csv")
 
+SF_parent_org <- SF_parent_org_orig %>% 
+  select(-`Affiliation Key`) %>% 
+  unique()
 # Perform full join
 all_users_SF_PO <- all_users_SF %>%
   left_join(SF_parent_org)
 
-all_users_SF_PO <- all_users_SF_PO %>%
-  mutate(NetID_1 = coalesce(NetID...10, NetID...11)) %>% 
-  select(-NetID...10, -NetID...11)
+# all_users_SF_PO <- all_users_SF_PO %>%
+#   mutate(NetID_1 = coalesce(NetID...11, NetID...12)) %>% 
+#   select(-NetID...11, -NetID...12)
 names(all_users_SF_PO)
 
 # coalesce old and new information
-all_users_SF_PO <- all_users_SF_PO %>%
-  mutate(NetID = coalesce(NetID, NetID_1))
-
-all_users_SF_PO  <- all_users_SF_PO  %>% 
-  select(-NetID_1) %>% 
-  distinct()
+# all_users_SF_PO <- all_users_SF_PO %>%
+#   mutate(NetID = coalesce(NetID, NetID_1))
+# 
+# all_users_SF_PO  <- all_users_SF_PO  %>% 
+#   select(-NetID_1) %>% 
+#   distinct()
 
 #### creating both types of SF ID ####
 #convert  SF 15 into 18
@@ -230,10 +215,21 @@ Cat_SF <- CC_all_new %>% left_join(CC_appt) %>%
 Cat_SF <- Cat_SF %>% 
   select(SF_15_ID, SF_18_ID, Sessions, Date, 
          Appt.Sessions, Cases.Sessions, Events.Sessions, News.Sessions,
-         `Parent Organization`, `Organization: Account Name`,
+         `Parent Organization`, `Organization: Account Name`, NetID, 
          Email, `First Name`, `Last Name`, `Last Login`, Profile, 
          `EDS Primary Affiliation`, `EDS Affiliations`) %>% 
   distinct()
+
+table(Cat_SF$`EDS Primary Affiliation`)
+
+# retain an original column copy
+Cat_SF$EDS_PRIMARY_AFFIL_ORIG <- Cat_SF$`EDS Primary Affiliation`
+
+
+# Filter out the specific values from the 'EDS Primary Affiliation' column
+Cat_SF <- Cat_SF %>%
+  filter(!`EDS Primary Affiliation` %in% c("degree-completer", "former-student", "affiliate",
+                                           "student", "studentworker", "admit", "gradasst"))
 
 # not merging in student enrollment data 
 #### Change Last Login to date format ####
@@ -247,14 +243,15 @@ Cat_SF_enroll <- Cat_SF %>%
   dplyr::mutate(New = ifelse(News.Sessions > 0, 1, 0)) 
 
 
-# retain an original column copy
-Cat_SF_enroll$EDS_PRIMARY_AFFIL_ORIG <- Cat_SF_enroll$`EDS Primary Affiliation`
-
 # group primary eds affiliations for CatCloud data
+# remove former student 
+# Cat_SF_enroll <- Cat_SF_enroll %>%
+#   filter(`EDS Primary Affiliation` != "former-student")
+
 Cat_SF_enroll <- Cat_SF_enroll %>%
   mutate(`EDS Primary Affiliation` = case_when(
     `EDS Primary Affiliation` %in% c("emeritus", "retiree", "former-dcc", "former-faculty", "former-member", 
-                                     "former-staff", "former-student") 
+                                     "former-staff") 
     ~ "former-member",
     TRUE ~ `EDS Primary Affiliation`  # Retain other values as they are
   ))
@@ -270,44 +267,66 @@ Cat_date_filter <- Cat_date_filter %>%
          Events = ifelse(!is.na(Event), "eV", ""),
          News = ifelse(!is.na(New), "N", ""),
          Total = str_c(Cases, Appts, Events, News)) # omit | (!is.na(Goal1) 
+# 
+# Cat_date_filter <- Cat_date_filter %>% 
+#   select(-EDS_PRIMARY_AFFIL_ORIG)
 
-Cat_date_filter <- Cat_date_filter %>% 
-  select(-EDS_PRIMARY_AFFIL_ORIG)
 
 
-#### rename effective user id ####
-Cat_date_filter <- Cat_date_filter %>% 
-  rename(`App-instance ID` = SF_18_ID)
 
 #### saturation by Affiliation type ####
-active_aff <- read_csv("initial_data/Fall2024/from_SF/active_univ_affiliations_SF_Aug25_2024.csv")
+# active_aff <- read_csv("initial_data/Fall2024/from_SF/active_univ_affiliation_9-4-24.csv") # might be a redundant step
 
 
 # group primary eds affiliations
-active_aff$EDS_Primary_aff_orig <- active_aff$`EDS Primary Affiliation`
+all_users_SF_PO$EDS_Primary_aff_orig <- all_users_SF_PO$`EDS Primary Affiliation`
 
-active_aff <- active_aff %>%
+# Filter out the specific values from the 'EDS Primary Affiliation' column
+all_users_SF_PO <- all_users_SF_PO %>%
+  filter(!`EDS Primary Affiliation` %in% c("degree-completer", "former-student", "affiliate",
+                                           "student", "studentworker", "admit", "gradasst"))
+# remove degree completer
+# all_users_SF_PO_no_dc <- all_users_SF_PO %>%
+#   filter(`EDS Primary Affiliation` != "degree-completer")
+
+all_users_SF_PO <- all_users_SF_PO %>%
   mutate(`EDS Primary Affiliation` = case_when(
     `EDS Primary Affiliation` %in% c("emeritus", "retiree", "former-dcc", "former-faculty", "former-member", 
-                                     "former-staff", "former-student") 
+                                     "former-staff") 
     ~ "former-member",
     TRUE ~ `EDS Primary Affiliation`  # Retain other values as they are
   ))
 
-all_users_SF$EDS_Primary_aff_orig <- all_users_SF$`EDS Primary Affiliation`
-all_users_SF <- all_users_SF %>%
-  mutate(`EDS Primary Affiliation` = case_when(
-    `EDS Primary Affiliation` %in% c("emeritus", "retiree", "former-dcc", "former-faculty", "former-member", 
-                                     "former-staff", "former-student") 
-    ~ "former-member",
-    TRUE ~ `EDS Primary Affiliation`  # Retain other values as they are
-  ))
+# all_users_SF$EDS_Primary_aff_orig <- all_users_SF$`EDS Primary Affiliation`
+# 
+# # Filter out the specific values from the 'EDS Primary Affiliation' column
+# all_users_SF <- all_users_SF %>%
+#   filter(!`EDS Primary Affiliation` %in% c("degree-completer", "former-student", "affiliate",
+#                                            "student", "studentworker", "admit", "gradasst"))
+
+# all_users_SF <- all_users_SF %>%
+#   mutate(`EDS Primary Affiliation` = case_when(
+#     `EDS Primary Affiliation` %in% c("emeritus", "retiree", "former-dcc", "former-faculty", "former-member", 
+#                                      "former-staff") 
+#     ~ "former-member",
+#     TRUE ~ `EDS Primary Affiliation`  # Retain other values as they are
+#   ))
 
 # create a table based on affiliations #
-EDS_Primary_aff_table <- all_users_SF %>%
+# EDS_Primary_aff_table_wo_act_aff <- all_users_SF %>%
+#   count(`EDS Primary Affiliation`, name = "All_Affiliation")%>% 
+#   left_join(Cat_date_filter %>%
+#               select(`App-instance ID`, `EDS Primary Affiliation`) %>%
+#               distinct() %>%
+#               # rename(Program.Campus_recode = Campus.recode)    %>%
+#               count(`EDS Primary Affiliation`, name = "N_users_affil")) %>%
+#   mutate(proportion = N_users_affil/All_Affiliation)
+# write_named_csv(EDS_Primary_aff_table_wo_act_aff)
+
+EDS_Primary_aff_table <- all_users_SF_PO %>%
   count(`EDS Primary Affiliation`, name = "All_Affiliation")%>% 
   left_join(Cat_date_filter %>%
-              select(`App-instance ID`, `EDS Primary Affiliation`) %>%
+              select(SF_18_ID, `EDS Primary Affiliation`) %>%
               distinct() %>%
               # rename(Program.Campus_recode = Campus.recode)    %>%
               count(`EDS Primary Affiliation`, name = "N_users_affil")) %>%
@@ -318,7 +337,7 @@ write_named_csv(EDS_Primary_aff_table)
 SF_Parent_org_table <- SF_parent_org %>%
   count(`Parent Organization`, name = "All_Parent_org")%>% 
   left_join(Cat_date_filter %>%
-              select(`App-instance ID`, `Parent Organization`) %>%
+              select(SF_18_ID, `Parent Organization`) %>%
               distinct() %>%
               # rename(Program.Campus_recode = Campus.recode)    %>%
               count(`Parent Organization`, name = "N_users_P_org")) %>%
@@ -327,10 +346,10 @@ SF_Parent_org_table <- SF_parent_org %>%
 write_named_csv(SF_Parent_org_table)
 
 # all Parent org table #
-All_Parent_org_table <- active_aff %>%
+All_Parent_org_table <- all_users_SF_PO %>%
   count(`Parent Organization`, name = "All_Parent_org")%>% 
   left_join(Cat_date_filter %>%
-              select(`App-instance ID`, `Parent Organization`) %>%
+              select(SF_18_ID, `Parent Organization`) %>%
               distinct() %>%
               # rename(Program.Campus_recode = Campus.recode)    %>%
               count(`Parent Organization`, name = "N_users_P_org")) %>%
@@ -338,7 +357,99 @@ All_Parent_org_table <- active_aff %>%
 
 write_named_csv(All_Parent_org_table)
 
+#delete if email is blank
+Cat_date_filter2employee <- Cat_date_filter[!(is.na(Cat_date_filter$Email) |Cat_date_filter$Email==""), ]
 
 #### write Cat date filter to file ####
-Cat_date_filter_employee <- as.data.frame(Cat_date_filter)
+#### rename effective user id ####
+Cat_date_filter <- Cat_date_filter %>% 
+  rename(`App-instance ID` = SF_18_ID)
+
+
+Cat_date_filter_employee <- Cat_date_filter |>
+  separate_longer_delim(cols = `EDS Affiliations`, delim = "; ")
+
+Cat_date_filter_employee <- Cat_date_filter_employee %>% 
+  filter(`EDS Affiliations` != "member") %>% 
+  filter(`EDS Affiliations` != "employee")
+
+# Cat_date_filter_employee <- as.data.frame(Cat_date_filter)
+
 write_named_csv(Cat_date_filter_employee)
+
+#### single line employees ####
+# employees_login <- Cat_date_filter_employee %>% 
+#   # select(NetID, Email, `EDS Primary Affiliation`, `EDS Affiliations`, `Parent Organization`,
+#   #        last_login2) %>% 
+#   filter(last_login2 > "2024-06-01") %>% 
+#   distinct()
+# 
+# last 90 days
+# To filter for the last 90 days in R using the last_login2 date variable, you can use the Sys.Date() function to get the current date and then subtract 90 days. Here's an example:
+# r
+
+# Ensure the last_login2 column is in Date format
+## If it is not already, you can convert it like this:
+
+Cat_date_filter_employee$last_login2 <- as.Date(Cat_date_filter_employee$last_login2)
+
+# Filter for the last 90 days
+last_101_days_data <- Cat_date_filter_employee[Cat_date_filter_employee$last_login2 >= Sys.Date() - 101, ]
+last_101_days_data_email_count2 <- length(unique(last_101_days_data$Email))
+print(last_101_days_dataemail_count2)
+
+
+table(last_99_days_data$`EDS Primary Affiliation`) %>% 
+  unique()
+
+names(last_99_days_data)
+write_named_csv(last_99_days_data)
+
+last_90_days_data <- Cat_date_filter_employee[Cat_date_filter_employee$last_login2 >= Sys.Date() - 90, ]
+write_named_csv(last_90_days_data)
+
+# take out affiliates 
+last_90_days_data <- last_90_days_data %>% 
+  select(-Date, -`Last Login`) %>% 
+  filter(!is.na(`EDS Primary Affiliation`)) %>%
+  unique()
+
+last_90_days_data_email_only <- last_90_days_data %>%  
+  select(Email, `EDS Primary Affiliation`) %>% 
+  unique(  ) 
+write_named_csv(last_90_days_data_email_only)
+
+## filtering data
+last_99_days_data <- last_99_days_data %>% 
+  select(-Date, -`Last Login`) %>% 
+  filter(!is.na(`EDS Primary Affiliation`)) %>%
+  unique()
+
+last_99_days_data_email_only <- last_99_days_data %>%  
+  select(Email, `EDS Primary Affiliation`) %>% 
+  unique(  ) 
+write_named_csv(last_90_days_data_email_only)
+
+last_99_days_data_email_only <- last_99_days_data %>%  
+  select(Email, `EDS Primary Affiliation`) %>% 
+  unique(  ) 
+write_named_csv(last_99_days_data_email_only)
+
+last_90_days_data_email_Parent_Org <- last_90_days_data %>% 
+  select(Email, `First Name`, `Last Name`, `Parent Organization`, `Organization: Account Name`, `EDS Primary Affiliation`) %>% 
+  distinct()
+
+unique_email_count <- length(unique(last_90_days_data$Email))
+print(unique_email_count)
+
+write_named_csv(last_90_days_data_email_Parent_Org)
+unique_email_count2 <- length(unique(last_90_days_data_email_single_line$Email))
+print(unique_email_count2)
+
+# old data
+employees_who_logged_in_since_6_2024 <- read_csv("clean_data/clean_fall2024/employees_who_logged_in_since_6_2024.csv")
+View(employees_who_logged_in_since_6_2024)
+employees_who_logged_in<- employees_who_logged_in_since_6_2024 %>% 
+  filter(`EDS Primary Affiliation` == "staff" | `EDS Primary Affiliation` == "faculty" | `EDS Primary Affiliation` == "dcc")
+unique_email_count3 <- length(unique(employees_who_logged_in$Email))
+print(unique_email_count3)
