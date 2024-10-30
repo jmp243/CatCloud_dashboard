@@ -27,27 +27,14 @@ write_named_csv <- function(x)
     deparse(substitute(x)),".csv"))
 
 #### read in excel file ####
-# doing an exploration with last 14 days from 8/23 to 9/5
-# CC_all1 <- read_csv("initial_data/Fall2024/CC_all/CC_all_Aug23-Sept5-2024.csv", skip=6)
-# 
-# CC_all1 <- CC_all1 %>%
-#   filter(!is.na(`Effective user ID`)) %>%
-#   select(-c(14)) # remove a total columns
-# 
-# CC_all1 <- CC_all1 %>%
-#   select(-c(9)) # total number of users are not needed as they are always 1 
 
 #### merge all CC users ####
-# CC_all1 <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Nov1-Nov30-2023.csv", skip=6)
-# CC_all2a <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Dec1-Dec31-2023.csv", skip=6)
-# CC_all2b <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Jan1-Feb29-2024.csv", skip=6)
-# CC_all3 <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Mar1-Mar31-2024.csv", skip=6)
 # CC_all4 <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Apr1-Apr30-2024.csv", skip=6)
 CC_all5 <- read_csv("initial_data/Fall2024/CC_all/CC_all_May16-May31-2024.csv", skip=6)
 CC_all6a <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Jun1-Jul31-2024.csv", skip=6) # new format
 CC_all6b <- read_csv("initial_data/cumulative_data/CC_all/CC_all_Aug1-Aug31-2024.csv", skip=6) # new format
 CC_all6c <- read_csv("initial_data/Fall2024/CC_all/CC_all_Sept1-Sept30-2024.csv", skip=6) # new format
-CC_all6d <- read_csv("initial_data/Fall2024/CC_all/CC_all_Oct1-Oct16-2024.csv", skip=6) # new format
+CC_all6d <- read_csv("initial_data/Fall2024/CC_all/CC_all_Oct1-Oct29-2024.csv", skip=6) # new format
 
 CC_all <- rbind(CC_all5, CC_all6a, CC_all6b, CC_all6c, CC_all6d)
 
@@ -94,7 +81,7 @@ CC_cases$Cases.Date <- as.Date(as.character(CC_cases$Cases.Date), format='%Y%m%d
 CC_appt3a <- read_csv("initial_data/Fall2024/appt/appt_May16-Jul31-2024.csv", skip = 6)
 CC_appt3b <- read_csv("initial_data/Fall2024/appt/appt_Aug1-Aug30-2024.csv", skip = 6)
 CC_appt3c <- read_csv("initial_data/Fall2024/appt/appt_Sept1-Sept30-2024.csv", skip = 6)
-CC_appt3d <- read_csv("initial_data/Fall2024/appt/appt_Oct1-Oct16-2024.csv", skip = 6)
+CC_appt3d <- read_csv("initial_data/Fall2024/appt/appt_Oct1-Oct29-2024.csv", skip = 6)
 
 
 CC_appt <- rbind(CC_appt3a, CC_appt3b, CC_appt3c, CC_appt3d)
@@ -111,7 +98,7 @@ CC_appt$`Effective user ID` <- as.character(CC_appt$`Effective user ID`)
 #### add edit users ####
 # CC_edit1 <- read_csv("initial_data/cumulative_data/add_edit/add_edit_Nov1-Dec31-2023.csv", skip = 6)
 CC_edit1 <- read_csv("initial_data/Fall2024/add_edit/add_edit_May16-Sept30-2024.csv", skip = 6)
-CC_edit2 <- read_csv("initial_data/Fall2024/add_edit/add_edit_Oct1-Oct16-2024.csv", skip = 6)
+CC_edit2 <- read_csv("initial_data/Fall2024/add_edit/add_edit_Oct1-Oct29-2024.csv", skip = 6)
 
 CC_edit <- rbind(CC_edit1, CC_edit2)
 CC_edit <- rename(CC_edit, Edit.Sessions = Sessions)
@@ -124,7 +111,7 @@ CC_edit <- CC_edit %>%
 #### goals users ####
 # CC_goals1 <- read_csv("initial_data/cumulative_data/goals/goals_Nov1-Dec31-2023.csv", skip = 6)
 CC_goals1 <- read_csv("initial_data/Fall2024/goals/goals_May16-Sept30-2024.csv", skip = 6)
-CC_goals2 <- read_csv("initial_data/Fall2024/goals/goals_Oct1-Oct16-2024.csv", skip = 6)
+CC_goals2 <- read_csv("initial_data/Fall2024/goals/goals_Oct1-Oct29-2024.csv", skip = 6)
 
 CC_goals <- rbind(CC_goals1, CC_goals2)
 CC_goals <- rename(CC_goals, Goal.Sessions = Sessions)
@@ -137,7 +124,7 @@ CC_goals <- CC_goals %>%
 #### events users ####
 # 
 CC_events1 <- read_csv("initial_data/Fall2024/events/Events_May16-Sept30-2024.csv", skip = 6)
-CC_events2 <- read_csv("initial_data/Fall2024/events/Events_Oct1-Oct16-2024.csv", skip = 6)
+CC_events2 <- read_csv("initial_data/Fall2024/events/Events_Oct1-Oct29-2024.csv", skip = 6)
 
 CC_events <- rbind(CC_events1, CC_events2)
 
@@ -146,10 +133,8 @@ CC_events <- CC_events %>%
   select(`Effective user ID`, `Total users`) %>% 
   rename(Events.Sessions = `Total users`)
 
-
-
 #### read in SF csv ####
-all_users_SF <- read_csv("initial_data/Fall2024/from_SF/Oct16_2024_community_users_profile.csv")
+all_users_SF <- read_csv("initial_data/Fall2024/from_SF/Oct30_2024_community_users_profile.csv")
 
 # change last login to a readable date format
 all_users_SF$last_login2 <- as.Date(mdy_hm(all_users_SF$`Last Login`))
@@ -689,11 +674,29 @@ room_reserve <- room_reserve %>%
 
 
 CC_case_subset <- CC_case %>% 
-  select(SF_18_ID, SF_15_ID, Cases.Sessions, `EDS Primary Affiliation`, `EDS Affiliations`, `Parent Organization`)
+  select(SF_18_ID, SF_15_ID, Cases.Sessions, Email, Cases.Date)
 
-CC_case_subset %>% 
-  left_join(borrow_technology, by = c("SF_18_ID", `Effective user ID`))
+CC_case_tech_room <- CC_case_subset %>% 
+  left_join(borrow_technology, by = c("SF_18_ID" = "Effective user ID")) %>% 
+  left_join(room_reserve, by = c("SF_18_ID" = "Effective user ID"))
+
+names(CC_case_tech_room)
   
+CC_case_tech_room <- CC_case_tech_room %>% 
+  select(SF_18_ID, SF_15_ID, Cases.Date, Cases.Sessions, Email, 
+         BorrowTech_sessions, room_reserve_sessions)
+
+CC_case_tech_room <- CC_case_tech_room %>% 
+  left_join(student_enrollment_from_sf) %>% 
+  left_join(SF_parent_org_orig) %>% 
+  left_join(Headcount_Fall2024)
+ 
+
+CC_case_tech_room <- CC_case_tech_room %>% 
+  select(SF_18_ID, Cases.Date, Cases.Sessions, BorrowTech_sessions, room_reserve_sessions, 
+         `Program: CPP Info Name`, `Subplan: CPP Info Name`, Campus, Career, 
+         `Class Standing`, `Primary College`) %>% 
+  distinct()
   
-    
+write_named_csv(CC_case_tech_room)
 ``
